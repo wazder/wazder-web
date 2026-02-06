@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Base Hue (approx for #5A6749) */
+  --hue: 86;
+
+  /* Colors */
+  --bg-primary: hsl(var(--hue), 15%, 7%);
+  --bg-secondary: hsl(var(--hue), 12%, 10%);
+  --bg-card: hsl(var(--hue), 12%, 14%);
+
+  --text-primary: hsl(var(--hue), 10%, 96%);
+  --text-secondary: hsl(var(--hue), 8%, 70%);
+  --text-muted: hsl(var(--hue), 6%, 50%);
+
+  --accent: #5A6749;
+  --accent-hover: #6D7D59;
+  --accent-text: hsl(0, 0%, 100%);
+
+  --border: hsl(var(--hue), 15%, 20%);
+  --border-hover: hsl(var(--hue), 15%, 30%);
+
+  /* Status Colors */
+  --success: hsl(150, 60%, 45%);
+  --warning: hsl(35, 90%, 60%);
+  --error: hsl(0, 80%, 60%);
+
+  /* Spacing & Layout */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-full: 9999px;
+
+  --header-height: 4rem;
+  --sidebar-width: 260px;
+  --bottombar-height: 2rem;
+}
+
+/* Bottom Bar */
+.bottombar-item:hover {
+  background: hsla(var(--hue), 15%, 80%, 0.1) !important;
+}
+
+.bottombar-item.active {
+  background: hsla(var(--hue), 15%, 80%, 0.14) !important;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Utilities */
+.glass {
+  background: hsla(var(--hue), 20%, 18%, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsla(var(--hue), 15%, 80%, 0.08);
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-card);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
