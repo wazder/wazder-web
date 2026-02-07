@@ -11,12 +11,13 @@ export function useTasks() {
         localStorage.setItem('tasks', JSON.stringify(tasks));
     }, [tasks]);
 
-    const addTask = (title: string, description: string) => {
+    const addTask = (title: string, description: string, jobId: string = '') => {
         const newTask: Task = {
             id: crypto.randomUUID(),
             title,
             description,
             status: 'todo',
+            jobId,
             createdAt: Date.now()
         };
         setTasks(prev => [newTask, ...prev]);

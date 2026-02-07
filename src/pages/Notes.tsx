@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNotes } from '../hooks/useNotes';
 import { Plus, Trash2, Search, FileText } from 'lucide-react';
 
@@ -6,6 +6,17 @@ export function Notes() {
     const { notes, addNote, updateNote, deleteNote } = useNotes();
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Escape key to deselect note
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setSelectedId(null);
+            }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, []);
 
     const filteredNotes = notes.filter(n =>
         n.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -20,33 +31,33 @@ export function Notes() {
     };
 
     return (
-        <div style={{ height: '100%', display: 'flex', gap: '2rem' }}>
+        <div style={{ height: '100%', display: 'flex', gap: '16px' }}>
             {/* Sidebar List */}
-            <div style={{ flex: '0 0 300px', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h2>Notes</h2>
+            <div style={{ flex: '0 0 260px', display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border)', paddingRight: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h2 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-secondary)' }}>Notes</h2>
                     <button
                         onClick={handleCreate}
                         style={{
-                            background: 'var(--accent)', color: 'white', padding: '0.5rem',
-                            borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center'
+                            background: 'var(--accent)', color: 'white', padding: '4px',
+                            display: 'flex', alignItems: 'center'
                         }}
                     >
-                        <Plus size={20} />
+                        <Plus size={16} />
                     </button>
                 </div>
 
-                <div className="glass" style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Search size={18} color="var(--text-muted)" />
+                <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border)', padding: '6px 10px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Search size={14} color="var(--text-muted)" />
                     <input
                         placeholder="Search notes..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        style={{ background: 'transparent', border: 'none', color: 'white', outline: 'none', width: '100%' }}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', outline: 'none', width: '100%', fontSize: '13px' }}
                     />
                 </div>
 
-                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {filteredNotes.map(note => (
                         <div
                             key={note.id}

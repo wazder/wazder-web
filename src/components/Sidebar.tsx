@@ -1,57 +1,72 @@
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, CheckSquare, Calendar, StickyNote, MessageCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MessageCircle, PanelLeft } from 'lucide-react';
 
-const navItems = [
-    { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
-    { path: '/calendar', icon: Calendar, label: 'Calendar' },
-    { path: '/notes', icon: StickyNote, label: 'Notes' },
-    { path: '/ai-assistant', icon: MessageCircle, label: 'AI Assistant' },
-];
+const PAGE_INFO: Record<string, { name: string; emoji: string }> = {
+    '/': { name: 'Worktree', emoji: '🌳' },
+    '/jobs': { name: 'Jobs', emoji: '💼' },
+    '/tasks': { name: 'Tasks', emoji: '✅' },
+    '/events': { name: 'Events', emoji: '📅' },
+    '/calendar': { name: 'Calendar', emoji: '🗓️' },
+    '/notes': { name: 'Notes', emoji: '📝' },
+};
 
-export function BottomBar() {
+interface StatusBarProps {
+    isChatOpen: boolean;
+    onToggleChat: () => void;
+    isSidebarOpen: boolean;
+    onToggleSidebar: () => void;
+    currentPath: string;
+}
+
+export function StatusBar({ isChatOpen, onToggleChat, onToggleSidebar, currentPath }: StatusBarProps) {
+    const [time, setTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const pageInfo = PAGE_INFO[currentPath] || PAGE_INFO['/'];
+
     return (
-        <footer className="glass" style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 'var(--bottombar-height)',
+        <footer style={{
+            height: 'var(--statusbar-height)',
+            background: 'var(--bg-statusbar)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'flex-start',
-            padding: '0 1rem',
-            zIndex: 1000,
-            borderTop: '1px solid hsla(var(--hue), 15%, 80%, 0.08)',
-            borderRadius: 0,
+            justifyContent: 'space-between',
+            padding: '0 8px',
         }}>
-            <nav style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-                {navItems.map((item) => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        title={item.label}
-                        className={({ isActive }) =>
-                            isActive ? 'bottombar-item active' : 'bottombar-item'
-                        }
-                        style={({ isActive }) => ({
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: '2rem',
-                            height: '100%',
-                            textDecoration: 'none',
-                            color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                            borderRadius: 'var(--radius-sm)',
-                            background: isActive ? 'hsla(var(--hue), 15%, 80%, 0.12)' : 'transparent',
-                            transition: 'all 0.2s ease',
-                            cursor: 'pointer',
-                        })}
-                    >
-                        <item.icon size={16} />
-                    </NavLink>
-                ))}
-            </nav>
+            {/* Left items */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                <button
+                    onClick={onToggleSidebar}
+                    className="statusbar-item"
+                    style={{ border: 'none', background: 'none', color: 'white' }}
+                    title="Toggle Sidebar (⌘B)"
+                >
+                    <PanelLeft size={14} />
+                </button>
+                <span className="statusbar-item">
+                    {pageInfo.emoji} {pageInfo.name}
+                </span>
+            </div>
+
+            {/* Right items */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                <span className="statusbar-item">
+                    {time.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </span>
+                <button
+                    onClick={onToggleChat}
+                    className="statusbar-item"
+                    style={{ border: 'none', background: 'none', color: 'white' }}
+                    title="Toggle Chat (⌘⌥B)"
+                >
+                    <MessageCircle size={14} />
+                    {isChatOpen ? 'Hide Chat' : 'Llama 3.3 70B'}
+                </button>
+            </div>
         </footer>
     );
-}""
+}

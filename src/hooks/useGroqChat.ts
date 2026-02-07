@@ -8,8 +8,46 @@ export interface Message {
     timestamp: number;
 }
 
+const JOB_COLORS = ['#1F6FEB', '#3FB950', '#9E741C', '#F0883E', '#A371F7', '#79C0FF', '#238636', '#F85149'];
+
+const SYSTEM_PROMPT = `Sen bir iş takip asistanısın. Kullanıcının job (proje/iş) ve task (görev) eklemesine yardım ediyorsun.
+
+KURALLAR:
+0. ASLA emoji kullanma - hiçbir mesajında emoji olmamalı
+1. Kullanıcı "job ekle", "proje ekle", "iş ekle" derse → create_jobs action'ı kullan
+2. Kullanıcı "task ekle", "görev ekle" derse → create_tasks action'ı kullan
+3. Sadece JSON döndür, başka açıklama YAPMA
+
+JOB EKLEMEK İÇİN (sadece JSON döndür):
+{"action":"create_jobs","jobs":[{"title":"İş Adı","description":"Açıklama"}]}
+
+TASK EKLEMEK İÇİN (sadece JSON döndür):
+{"action":"create_tasks","tasks":[{"title":"Görev Adı","description":"Açıklama"}]}
+
+Örnek:
+Kullanıcı: "job olarak heviAI, B4AFC ekle"
+Sen: {"action":"create_jobs","jobs":[{"title":"heviAI","description":""},{"title":"B4AFC","description":""}]}
+
+Kullanıcı: "görev ekle: rapor yaz"
+Sen: {"action":"create_tasks","tasks":[{"title":"Rapor yaz","description":""}]}
+
+Eğer kullanıcı bir aksiyon istemiyorsa, normal şekilde Türkçe cevap ver.`;
+
+function extractJSON(text: string): any | null {
+    // Try to find JSON object in the text
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+        try {
+            return JSON.parse(jsonMatch[0]);
+        } catch {
+            return null;
+        }
+    }
+    return null;
+}
+
 export function useGroqChat() {
-    const { addTask } = useTaskContext();
+    const { addTask, addJob, jobs } = useTaskContext();
     const [messages, setMessages] = useState<Message[]>(() => {
         const saved = localStorage.getItem('chat_history');
         return saved ? JSON.parse(saved) : [];
@@ -46,8 +84,8 @@ export function useGroqChat() {
                 body: JSON.stringify({
                     model: 'llama-3.3-70b-versatile',
                     messages: [
-                        { role: 'system', content: 'You are a helpful personal assistant. You can create tasks. If the user asks to create a task(s), return a JSON object (NO MARKDOWN) with: { "action": "create_tasks", "tasks": [{ "title": "...", "description": "..." }] }. Otherwise, just reply normally.' },
-                        ...messages.map(m => ({ role: m.role, content: m.content })),
+                        { role: 'system', content: SYSTEM_PROMPT },
+                        ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
                         { role: 'user', content }
                     ]
                 })
@@ -63,19 +101,20 @@ export function useGroqChat() {
 
             // Try to parse as JSON Action
             let displayedContent = assistantContent;
-            try {
-                // simple cleanup in case logic adds backticks
-                const cleanJson = assistantContent.replace(/```json/g, '').replace(/```/g, '').trim();
-                if (cleanJson.startsWith('{')) {
-                    const parsed = JSON.parse(cleanJson);
-                    if (parsed.action === 'create_tasks' && Array.isArray(parsed.tasks)) {
-                        parsed.tasks.forEach((t: any) => addTask(t.title, t.description || ''));
-                        displayedContent = `✅ Created ${parsed.tasks.length} task(s) on your board.`;
-                    }
-                }
-            } catch (e) {
-                // Not JSON or failed to parse, treat as normal text
-                console.log('Not a JSON action', e);
+            const parsed = extractJSON(assistantContent);
+            
+            if (parsed?.action === 'create_jobs' && Array.isArray(parsed.jobs)) {
+                parsed.jobs.forEach((j: any, index: number) => {
+                    const color = JOB_COLORS[(jobs.length + index) % JOB_COLORS.length];
+                    addJob(j.title, j.description || '', color);
+                });
+                displayedContent = `✅ ${parsed.jobs.length} job eklendi: ${parsed.jobs.map((j: any) => j.title).join(', ')}`;
+            } else if (parsed?.action === 'create_tasks' && Array.isArray(parsed.tasks)) {
+                const defaultJobId = jobs.length > 0 ? jobs[0].id : '';
+                parsed.tasks.forEach((t: any) => {
+                    addTask(t.title, t.description || '', t.jobId || defaultJobId);
+                });
+                displayedContent = `✅ ${parsed.tasks.length} task eklendi: ${parsed.tasks.map((t: any) => t.title).join(', ')}`;
             }
 
             const assistantMessage: Message = {

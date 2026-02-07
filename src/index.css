@@ -1,61 +1,116 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Base Hue (approx for #5A6749) */
-  --hue: 86;
+  /* GitHub Dark Theme Colors */
+  --bg-primary: #0D1117;
+  --bg-secondary: #010409;
+  --bg-card: #161B22;
+  --bg-sidebar: #010409;
+  --bg-activitybar: #010409;
+  --bg-statusbar: #1F6FEB;
+  --bg-titlebar: #010409;
+  --bg-input: #090C10;
+  --bg-hover: rgba(31, 111, 235, 0.1);
+  --bg-active: rgba(31, 111, 235, 0.15);
 
-  /* Colors */
-  --bg-primary: hsl(var(--hue), 15%, 7%);
-  --bg-secondary: hsl(var(--hue), 12%, 10%);
-  --bg-card: hsl(var(--hue), 12%, 14%);
+  --text-primary: #E6EDF3;
+  --text-secondary: #7D8590;
+  --text-muted: #484F58;
+  --text-accent: #1F6FEB;
 
-  --text-primary: hsl(var(--hue), 10%, 96%);
-  --text-secondary: hsl(var(--hue), 8%, 70%);
-  --text-muted: hsl(var(--hue), 6%, 50%);
+  --accent: #1F6FEB;
+  --accent-hover: #388BFD;
+  --accent-text: #FFFFFF;
 
-  --accent: #5A6749;
-  --accent-hover: #6D7D59;
-  --accent-text: hsl(0, 0%, 100%);
-
-  --border: hsl(var(--hue), 15%, 20%);
-  --border-hover: hsl(var(--hue), 15%, 30%);
+  --border: #30363D;
+  --border-hover: #484F58;
 
   /* Status Colors */
-  --success: hsl(150, 60%, 45%);
-  --warning: hsl(35, 90%, 60%);
-  --error: hsl(0, 80%, 60%);
+  --success: #3FB950;
+  --warning: #9E741C;
+  --error: #F85149;
 
   /* Spacing & Layout */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1.25rem;
-  --radius-full: 9999px;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-full: 0;
 
-  --header-height: 4rem;
-  --sidebar-width: 260px;
-  --bottombar-height: 2rem;
+  --activitybar-width: 48px;
+  --sidebar-width: 220px;
+  --statusbar-height: 22px;
+  --panel-width: 320px;
+  --titlebar-height: 30px;
+  --tab-height: 35px;
 }
 
-/* Bottom Bar */
-.bottombar-item:hover {
-  background: hsla(var(--hue), 15%, 80%, 0.1) !important;
+/* Activity Bar */
+.activity-item {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.1s;
 }
 
-.bottombar-item.active {
-  background: hsla(var(--hue), 15%, 80%, 0.14) !important;
+.activity-item:hover {
+  color: var(--text-primary);
+}
+
+.activity-item.active {
+  color: var(--text-primary);
+}
+
+.activity-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--text-primary);
+}
+
+/* Status Bar */
+.statusbar-item {
+  padding: 0 8px;
+  font-size: 12px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: white;
+  cursor: pointer;
+}
+
+.statusbar-item:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  font-size: 13px;
+  /* Prevent browser gestures on macOS */
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
 /* Typography */
@@ -66,10 +121,14 @@ h4,
 h5,
 h6 {
   margin: 0;
-  font-weight: 600;
-  letter-spacing: -0.025em;
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--text-primary);
 }
+
+h1 { font-size: 1.5rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1rem; }
 
 button {
   font-family: inherit;
@@ -80,10 +139,8 @@ button {
 
 /* Utilities */
 .glass {
-  background: hsla(var(--hue), 20%, 18%, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid hsla(var(--hue), 15%, 80%, 0.08);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
 }
 
 .flex-center {
@@ -92,10 +149,10 @@ button {
   justify-content: center;
 }
 
-/* Scrollbar */
+/* Scrollbar - VS Code style */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -103,10 +160,25 @@ button {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-card);
-  border-radius: var(--radius-full);
+  background: rgba(121, 121, 121, 0.4);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-hover);
+  background: rgba(121, 121, 121, 0.7);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Panel resize handle */
+.resize-handle {
+  width: 4px;
+  cursor: ew-resize;
+  background: transparent;
+  transition: background 0.1s;
+}
+
+.resize-handle:hover {
+  background: var(--accent);
 }
