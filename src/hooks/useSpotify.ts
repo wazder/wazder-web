@@ -10,7 +10,8 @@ interface SpotifyTrack {
 }
 
 const SPOTIFY_CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || '';
-const REDIRECT_URI = window.location.origin + '/';
+// Spotify only has https://wazder.com configured - always use that for OAuth
+const REDIRECT_URI = 'https://wazder.com/';
 const SCOPES = ['user-read-currently-playing', 'user-read-playback-state'];
 
 function generateRandomString(length: number): string {
