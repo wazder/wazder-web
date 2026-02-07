@@ -56,14 +56,15 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (!supabase || !userId) return;
 
+        const db = supabase; // TypeScript narrowing
         const loadData = async () => {
             setLoading(true);
             try {
                 const [jobsRes, tasksRes, eventsRes, notesRes] = await Promise.all([
-                    supabase.from('jobs').select('*').eq('user_id', userId),
-                    supabase.from('tasks').select('*').eq('user_id', userId),
-                    supabase.from('events').select('*').eq('user_id', userId),
-                    supabase.from('notes').select('*').eq('user_id', userId),
+                    db.from('jobs').select('*').eq('user_id', userId),
+                    db.from('tasks').select('*').eq('user_id', userId),
+                    db.from('events').select('*').eq('user_id', userId),
+                    db.from('notes').select('*').eq('user_id', userId),
                 ]);
 
                 if (jobsRes.data) setJobs(jobsRes.data.map(j => ({ ...j, createdAt: new Date(j.created_at).getTime() })));
