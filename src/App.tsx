@@ -2,24 +2,29 @@ import DarkVeil from './DarkVeil';
 
 export default function App() {
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+    <div style={{
+      width: '100vw',
+      height: '100vh',
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
       <DarkVeil hueShift={120} speed={1.1} warpAmount={0.35} />
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        fontFamily: 'Helvetica, Arial, sans-serif',
-        fontWeight: 700,
-        fontSize: 'clamp(24px, 5vw, 72px)',
+      <span style={{
+        position: 'relative',
+        zIndex: 1,
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+        fontWeight: 600,
+        fontSize: 'clamp(18px, 3vw, 48px)',
         color: '#ffffff',
-        letterSpacing: '0.02em',
-        textRendering: 'optimizeLegibility',
+        letterSpacing: '-0.02em',
+        textRendering: 'geometricPrecision',
         WebkitFontSmoothing: 'antialiased',
         MozOsxFontSmoothing: 'grayscale',
       }}>
         in progress...
-      </div>
+      </span>
     </div>
   );
 }
