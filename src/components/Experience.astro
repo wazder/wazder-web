@@ -1,0 +1,186 @@
+---
+type Role = {
+  title: string;
+  type?: string;
+  period: string;
+  points: string[];
+};
+
+type Job = {
+  company: string;
+  location: string;
+  url?: string;
+  roles: Role[];
+};
+
+const jobs: Job[] = [
+  {
+    company: 'Independent Software & AI Studio',
+    location: 'Istanbul, Türkiye',
+    url: 'https://camellayer.com',
+    roles: [
+      {
+        title: 'Co-founder & Engineer',
+        type: 'Freelance',
+        period: 'Mar 2026 — Present',
+        points: [
+          'Built and run a two-person studio shipping custom software and AI systems to paying clients.',
+          'Own engagements end-to-end: requirements, design, development, deployment, and ongoing support.',
+          'Co-creator of camellayer.com (CLL), an in-house product built alongside client work.',
+        ],
+      },
+    ],
+  },
+  {
+    company: 'GIS Analytics',
+    location: 'London, UK (Remote)',
+    roles: [
+      {
+        title: 'Software Engineer',
+        type: 'Contract',
+        period: 'Mar 2026 — Present',
+        points: [
+          'Built web-based interfaces with interactive 3D rendering for geospatial data visualization.',
+          'Developed full-stack features across the GIS web product, from data layer to client.',
+        ],
+      },
+    ],
+  },
+  {
+    company: 'okeep.co (yaptir.io)',
+    location: 'Istanbul, Türkiye',
+    roles: [
+      {
+        title: 'Automation Engineer',
+        type: 'Contract',
+        period: 'Mar 2026 — May 2026',
+        points: [
+          'Designed and shipped automation workflows for AI-driven client operations.',
+          'Maintained AI tooling integrations with downstream business systems to cut recurring manual overhead.',
+        ],
+      },
+      {
+        title: 'Software Engineer',
+        type: 'Contract',
+        period: 'Jan 2026 — Mar 2026',
+        points: [
+          'Delivered end-to-end software and automation projects, from scoping to deployment.',
+          'Led a small engineering team, handled client-facing discussions and parallel engagements.',
+        ],
+      },
+    ],
+  },
+  {
+    company: 'B4AFC — Business for Aging Friendly Community',
+    location: 'Istanbul, Türkiye',
+    roles: [
+      {
+        title: 'IT Specialist',
+        type: 'Part-time',
+        period: 'Jan 2026 — Mar 2026',
+        points: [
+          "Designed, built, and maintained the organization's website; streamlined operations via digital solutions.",
+        ],
+      },
+    ],
+  },
+  {
+    company: 'Pinsoft — IT Solutions and Consulting',
+    location: 'Istanbul, Türkiye',
+    roles: [
+      {
+        title: 'Research & Development Intern',
+        type: 'Internship',
+        period: 'Aug 2025 — Dec 2025',
+        points: [
+          'Designed a fully functional ML model and pipeline for image processing projects.',
+          'Integrated hardware and software (ESP, AD, ADS modules) for global airway companies.',
+        ],
+      },
+      {
+        title: 'Software Intern',
+        type: 'Summer Internship',
+        period: 'Jun 2025 — Aug 2025',
+        points: [
+          'Built initial prototypes for image processing pipelines later expanded during R&D promotion.',
+        ],
+      },
+    ],
+  },
+  {
+    company: 'Self-employed',
+    location: 'Istanbul, Türkiye',
+    roles: [
+      {
+        title: 'Game Developer',
+        period: 'Aug 2024 — Dec 2024',
+        points: [
+          'Developed an isometric Pokémon-like game and a 2D office-themed game in Unity / C#.',
+          'Designed gameplay elements and handled artistic direction end-to-end.',
+        ],
+      },
+    ],
+  },
+  {
+    company: 'NOVENTIQ Makronet Bilgi Teknolojileri',
+    location: 'Istanbul, Türkiye',
+    roles: [
+      {
+        title: 'Software Intern',
+        type: 'Summer Internship',
+        period: 'Jul 2024 — Aug 2024',
+        points: [
+          'Contributed to internal .NET and web tools; supported the data analytics team on reporting workflows.',
+        ],
+      },
+    ],
+  },
+];
+---
+
+<section id="experience" class="py-32 px-6">
+  <div class="mx-auto max-w-3xl">
+    <h2 class="text-sm uppercase tracking-[0.3em] text-white/40 mb-10">Experience</h2>
+
+    <ol class="space-y-12">
+      {jobs.map((job) => (
+        <li>
+          <div class="flex items-baseline justify-between gap-4 flex-wrap">
+            {job.url ? (
+              <a
+                href={job.url}
+                target="_blank"
+                rel="noreferrer"
+                class="text-xl font-light hover:text-white text-white/90 transition-colors"
+              >
+                {job.company}
+              </a>
+            ) : (
+              <span class="text-xl font-light text-white/90">{job.company}</span>
+            )}
+            <span class="text-xs text-white/40">{job.location}</span>
+          </div>
+
+          <div class="mt-4 space-y-5 border-l border-white/10 pl-5">
+            {job.roles.map((role) => (
+              <div>
+                <div class="flex items-baseline justify-between gap-4 flex-wrap">
+                  <span class="text-sm text-white/80">
+                    {role.title}
+                    {role.type && <span class="text-white/40"> · {role.type}</span>}
+                  </span>
+                  <span class="text-xs text-white/40">{role.period}</span>
+                </div>
+                <ul class="mt-2 space-y-1 text-sm text-white/55 leading-relaxed">
+                  {role.points.map((p) => (
+                    <li class="before:content-['—'] before:mr-2 before:text-white/30">{p}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>

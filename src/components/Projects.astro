@@ -1,0 +1,87 @@
+---
+type Project = {
+  name: string;
+  description: string;
+  href: string;
+  tags: string[];
+};
+
+const projects: Project[] = [
+  {
+    name: 'CamelLayer',
+    description:
+      'AI coding in your native language — translates, compresses, and optimizes prompts to cut ~40% token usage. Co-created in-house product.',
+    href: 'https://camellayer.com',
+    tags: ['Product', 'NLP', 'CLI'],
+  },
+  {
+    name: 'NEST',
+    description:
+      'Neural EEG Sequence Transducer — decoding brain signals into open-vocabulary text via Transformer encoders and BART cross-attention decoding.',
+    href: 'https://github.com/wazder/NEST',
+    tags: ['PyTorch', 'BCI', 'Transformers'],
+  },
+  {
+    name: 'Cognitive Drone',
+    description:
+      'Benchmarking VLM reasoning for autonomous drone gate selection — multi-model evaluation on CognitiveDroneBench with CLIP-free matching.',
+    href: 'https://github.com/wazder/cognitive-drone',
+    tags: ['VLM', 'Computer Vision', 'Benchmark'],
+  },
+  {
+    name: 'Cross-Lingual VLA',
+    description:
+      'IEEE SIU 2026 paper — evaluating Turkish command understanding in OpenVLA across vision-language-action models.',
+    href: 'https://github.com/wazder',
+    tags: ['Research', 'VLA', 'Multilingual'],
+  },
+];
+---
+
+<section id="projects" class="py-32 px-6">
+  <div class="mx-auto max-w-3xl">
+    <h2 class="text-sm uppercase tracking-[0.3em] text-white/40 mb-10">Selected Work</h2>
+
+    <ul class="divide-y divide-white/10 border-y border-white/10">
+      {projects.map((p) => (
+        <li>
+          <a
+            href={p.href}
+            target="_blank"
+            rel="noreferrer"
+            class="flex flex-col gap-3 py-7 group"
+          >
+            <div class="flex items-baseline justify-between gap-4 flex-wrap">
+              <span class="text-xl font-light group-hover:text-white text-white/90 transition-colors">
+                {p.name}
+              </span>
+              <span class="text-xs text-white/40 group-hover:text-white/60 transition-colors">
+                {p.href.replace(/^https?:\/\//, '')} ↗
+              </span>
+            </div>
+            <p class="text-sm text-white/55 leading-relaxed max-w-2xl">{p.description}</p>
+            <div class="flex gap-2 flex-wrap">
+              {p.tags.map((t) => (
+                <span class="text-[10px] uppercase tracking-wider text-white/40 border border-white/15 px-2 py-0.5 rounded-full">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <div class="mt-8 text-sm text-white/40">
+      More on
+      <a
+        href="https://github.com/wazder"
+        target="_blank"
+        rel="noreferrer"
+        class="text-white/70 hover:text-white transition-colors underline underline-offset-4 decoration-white/20"
+      >
+        github.com/wazder
+      </a>.
+    </div>
+  </div>
+</section>

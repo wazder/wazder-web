@@ -1,0 +1,62 @@
+---
+const publications = [
+  {
+    title:
+      'Cross-Lingual Performance Analysis of Vision-Language-Action Models: Evaluating Turkish Command Understanding in OpenVLA',
+    venue: 'IEEE SIU 2026',
+    status: 'Accepted',
+    date: 'Jul 2026',
+  },
+];
+
+const certifications = [
+  { issuer: 'Google Cloud', name: 'Professional Cloud Architect' },
+  {
+    issuer: 'Anthropic',
+    name: 'Claude Code in Action · Building with the Claude API · Agent Skills · Model Context Protocol',
+  },
+  {
+    issuer: 'Yapay Zeka ve Teknoloji Akademisi',
+    name: 'Advanced AI training program (2025 — 2026)',
+  },
+];
+---
+
+<section id="publications" class="py-32 px-6">
+  <div class="mx-auto max-w-3xl">
+    <h2 class="text-sm uppercase tracking-[0.3em] text-white/40 mb-10">
+      Publications &amp; Certifications
+    </h2>
+
+    <div class="space-y-10">
+      <div>
+        <h3 class="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">Publications</h3>
+        <ul class="space-y-4">
+          {publications.map((p) => (
+            <li>
+              <div class="flex items-baseline justify-between gap-4 flex-wrap">
+                <span class="text-sm text-white/85 max-w-2xl leading-relaxed">{p.title}</span>
+                <span class="text-xs text-white/40 whitespace-nowrap">{p.date}</span>
+              </div>
+              <div class="text-xs text-white/50 mt-1">
+                {p.venue} <span class="text-white/30">·</span> {p.status}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">Certifications</h3>
+        <ul class="space-y-5 sm:space-y-3">
+          {certifications.map((c) => (
+            <li class="flex flex-col sm:grid sm:grid-cols-[160px_1fr] gap-1 sm:gap-4 sm:items-baseline">
+              <span class="text-xs uppercase tracking-wider text-white/40">{c.issuer}</span>
+              <span class="text-sm text-white/70">{c.name}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
