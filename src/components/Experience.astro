@@ -140,7 +140,7 @@ const jobs: Job[] = [
 
 <section id="experience" class="py-32 px-6">
   <div class="mx-auto max-w-3xl">
-    <h2 class="text-sm uppercase tracking-[0.3em] text-white/40 mb-10">Experience</h2>
+    <h2 class="text-sm uppercase tracking-[0.3em] text-white mb-10">Experience</h2>
 
     <ol class="space-y-12">
       {jobs.map((job) => (
@@ -151,29 +151,29 @@ const jobs: Job[] = [
                 href={job.url}
                 target="_blank"
                 rel="noreferrer"
-                class="text-xl font-light hover:text-white text-white/90 transition-colors"
+                class="text-xl font-light text-white hover:underline underline-offset-4 transition-colors"
               >
                 {job.company}
               </a>
             ) : (
-              <span class="text-xl font-light text-white/90">{job.company}</span>
+              <span class="text-xl font-light text-white">{job.company}</span>
             )}
-            <span class="text-xs text-white/40">{job.location}</span>
+            <span class="text-xs text-white">{job.location}</span>
           </div>
 
           <div class="mt-4 space-y-5 border-l border-white/10 pl-5">
             {job.roles.map((role) => (
               <div>
                 <div class="flex items-baseline justify-between gap-4 flex-wrap">
-                  <span class="text-sm text-white/80">
+                  <span class="text-sm text-white">
                     {role.title}
-                    {role.type && <span class="text-white/40"> · {role.type}</span>}
+                    {role.type && <span class="text-white"> · {role.type}</span>}
                   </span>
-                  <span class="text-xs text-white/40">{role.period}</span>
+                  <span class="text-xs text-white">{role.period}</span>
                 </div>
-                <ul class="mt-2 space-y-1 text-sm text-white/55 leading-relaxed">
+                <ul class="mt-2 space-y-1 text-sm text-white leading-relaxed">
                   {role.points.map((p) => (
-                    <li class="before:content-['—'] before:mr-2 before:text-white/30">{p}</li>
+                    <li class="before:content-['—'] before:mr-2 before:text-white">{p}</li>
                   ))}
                 </ul>
               </div>

@@ -1,0 +1,45 @@
+---
+import type { Payment, Currency } from '../../lib/flaw/types';
+import { formatMoney, formatDate, sumPaymentsByCurrency } from '../../lib/flaw/format';
+
+interface Props {
+  payments: Payment[];
+}
+const { payments } = Astro.props;
+
+const totals = sumPaymentsByCurrency(payments);
+const totalLines = (Object.entries(totals) as [Currency, number][])
+  .filter(([, v]) => v > 0)
+  .map(([cur, amt]) => formatMoney(amt, cur));
+
+const sorted = [...payments].sort((a, b) => b.date.localeCompare(a.date));
+---
+
+<section>
+  <header class="flex items-baseline justify-between border-b border-white/10 pb-2 mb-3">
+    <h2 class="text-[10px] font-mono font-thin uppercase tracking-[0.2em] text-white/40">payments</h2>
+    <div class="text-right space-y-0.5">
+      {totalLines.length === 0 ? (
+        <span class="text-xs font-mono font-thin text-white/30">—</span>
+      ) : (
+        totalLines.map((l) => <div class="text-sm font-light tabular-nums">{l}</div>)
+      )}
+    </div>
+  </header>
+
+  {payments.length === 0 ? (
+    <p class="text-xs font-mono font-thin text-white/30 py-2">no payments yet.</p>
+  ) : (
+    <ul class="divide-y divide-white/5">
+      {sorted.map((p) => (
+        <li class="py-2 grid grid-cols-[1fr_auto] gap-3 items-baseline">
+          <div class="min-w-0">
+            <div class="text-sm text-white truncate">{p.note || 'payment'}</div>
+            <div class="text-[10px] font-mono font-thin text-white/40 tabular-nums">{formatDate(p.date)}</div>
+          </div>
+          <div class="text-sm font-light tabular-nums">{formatMoney(p.amount, p.currency)}</div>
+        </li>
+      ))}
+    </ul>
+  )}
+</section>

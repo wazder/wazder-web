@@ -40,7 +40,7 @@ const projects: Project[] = [
 
 <section id="projects" class="py-32 px-6">
   <div class="mx-auto max-w-3xl">
-    <h2 class="text-sm uppercase tracking-[0.3em] text-white/40 mb-10">Selected Work</h2>
+    <h2 class="text-sm uppercase tracking-[0.3em] text-white mb-10">Selected Work</h2>
 
     <ul class="divide-y divide-white/10 border-y border-white/10">
       {projects.map((p) => (
@@ -52,17 +52,17 @@ const projects: Project[] = [
             class="flex flex-col gap-3 py-7 group"
           >
             <div class="flex items-baseline justify-between gap-4 flex-wrap">
-              <span class="text-xl font-light group-hover:text-white text-white/90 transition-colors">
+              <span class="text-xl font-light group-hover:text-white text-white transition-colors">
                 {p.name}
               </span>
-              <span class="text-xs text-white/40 group-hover:text-white/60 transition-colors">
-                {p.href.replace(/^https?:\/\//, '')} ↗
+              <span class="text-xs text-white group-hover:text-white transition-colors">
+                {p.href.replace(/^https?:\/\//, '')} <span class="arrow arrow-up-right">↗</span>
               </span>
             </div>
-            <p class="text-sm text-white/55 leading-relaxed max-w-2xl">{p.description}</p>
+            <p class="text-sm text-white leading-relaxed max-w-2xl">{p.description}</p>
             <div class="flex gap-2 flex-wrap">
               {p.tags.map((t) => (
-                <span class="text-[10px] uppercase tracking-wider text-white/40 border border-white/15 px-2 py-0.5 rounded-full">
+                <span class="text-[10px] uppercase tracking-wider text-white border border-white/15 px-2 py-0.5 rounded-full">
                   {t}
                 </span>
               ))}
@@ -72,13 +72,13 @@ const projects: Project[] = [
       ))}
     </ul>
 
-    <div class="mt-8 text-sm text-white/40">
+    <div class="mt-8 text-sm text-white">
       More on
       <a
         href="https://github.com/wazder"
         target="_blank"
         rel="noreferrer"
-        class="text-white/70 hover:text-white transition-colors underline underline-offset-4 decoration-white/20"
+        class="text-white hover:text-white transition-colors underline underline-offset-4 decoration-white/20"
       >
         github.com/wazder
       </a>.

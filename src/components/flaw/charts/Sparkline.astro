@@ -1,0 +1,44 @@
+---
+interface Props {
+  values: number[];
+  width?: number;
+  height?: number;
+  stroke?: string;
+  fill?: string;
+}
+const { values, width = 120, height = 24, stroke = 'rgba(255,255,255,0.85)', fill = 'rgba(255,255,255,0.06)' } = Astro.props;
+
+const max = Math.max(1, ...values);
+const n = Math.max(values.length, 1);
+const stepX = (width - 2) / Math.max(1, n - 1);
+
+const points = values.map((v, i) => {
+  const x = 1 + i * stepX;
+  const y = height - 1 - (v / max) * (height - 2);
+  return [x, y] as const;
+});
+
+const linePath = points.length > 1
+  ? 'M ' + points.map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).join(' L ')
+  : '';
+
+const areaPath = points.length > 1
+  ? linePath + ` L ${(width - 1).toFixed(2)},${(height - 1).toFixed(2)} L 1,${(height - 1).toFixed(2)} Z`
+  : '';
+
+const isEmpty = values.every((v) => v === 0);
+---
+
+<svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} class="block">
+  {isEmpty ? (
+    <line x1="1" y1={height - 1} x2={width - 1} y2={height - 1} stroke="rgba(255,255,255,0.15)" stroke-dasharray="2 3" />
+  ) : (
+    <>
+      <path d={areaPath} fill={fill} />
+      <path d={linePath} fill="none" stroke={stroke} stroke-width="1" stroke-linejoin="round" stroke-linecap="round" />
+      {points.length > 0 && (
+        <circle cx={points[points.length - 1][0]} cy={points[points.length - 1][1]} r="1.6" fill="white" />
+      )}
+    </>
+  )}
+</svg>

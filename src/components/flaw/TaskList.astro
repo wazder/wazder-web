@@ -1,0 +1,62 @@
+---
+import type { Task, TaskStatus } from '../../lib/flaw/types';
+import { formatDate, taskStatusLabel, taskStatusColor } from '../../lib/flaw/format';
+
+interface Props {
+  tasks: Task[];
+}
+const { tasks } = Astro.props;
+
+const order: TaskStatus[] = ['in_progress', 'todo', 'done'];
+const grouped: Record<TaskStatus, Task[]> = { todo: [], in_progress: [], done: [] };
+for (const t of tasks) grouped[t.status].push(t);
+
+const inProgress = grouped.in_progress.length;
+const todo       = grouped.todo.length;
+const done       = grouped.done.length;
+---
+
+<section>
+  <header class="flex items-baseline justify-between border-b border-white/10 pb-2 mb-3">
+    <h2 class="text-[10px] font-mono font-thin uppercase tracking-[0.2em] text-white/40">tasks</h2>
+    <div class="text-xs font-mono font-thin tabular-nums">
+      <span style="color:#F59E0B">{inProgress}</span>
+      <span class="text-white/20"> / </span>
+      <span class="text-white/60">{todo}</span>
+      <span class="text-white/20"> / </span>
+      <span style="color:#22C55E">{done}</span>
+    </div>
+  </header>
+
+  {tasks.length === 0 ? (
+    <p class="text-xs font-mono font-thin text-white/30 py-2">no tasks yet.</p>
+  ) : (
+    <div class="space-y-5">
+      {order.map((s) => grouped[s].length > 0 && (
+        <div>
+          <div class="text-[10px] font-mono font-thin uppercase tracking-[0.2em] mb-2" style={`color:${taskStatusColor(s)}`}>
+            {taskStatusLabel(s)}
+          </div>
+          <ul class="space-y-2">
+            {grouped[s].map((t) => (
+              <li class="flex items-start gap-3 text-sm">
+                <span class="mt-2 size-1 shrink-0 rounded-full" style={`background:${taskStatusColor(s)}`}></span>
+                <div class="min-w-0 flex-1">
+                  <div class={s === 'done' ? 'text-white/50 line-through decoration-white/20' : 'text-white'}>
+                    {t.title}
+                  </div>
+                  {t.description && (
+                    <div class="mt-0.5 text-[12px] font-thin text-white/50">{t.description}</div>
+                  )}
+                  {t.date && (
+                    <div class="mt-0.5 text-[10px] font-mono font-thin text-white/30 tabular-nums">{formatDate(t.date)}</div>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  )}
+</section>

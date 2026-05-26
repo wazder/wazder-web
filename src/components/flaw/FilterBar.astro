@@ -1,0 +1,100 @@
+---
+import type { ProjectStatus } from '../../lib/flaw/types';
+import { statusLabel } from '../../lib/flaw/format';
+
+const statuses: ProjectStatus[] = ['active', 'paused', 'completed', 'archived'];
+---
+
+<section class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+  <nav id="status-filter" class="flex flex-wrap items-baseline gap-x-5 gap-y-1 text-xs font-mono font-thin">
+    <span class="text-white/30 uppercase tracking-[0.2em] text-[10px]">filter</span>
+    <button type="button" data-status="all" class="status-chip text-white hover:underline underline-offset-4" data-active="true">all</button>
+    {statuses.map((s) => (
+      <button type="button" data-status={s} class="status-chip text-white/50 hover:text-white hover:underline underline-offset-4" data-active="false">
+        {statusLabel(s)}
+      </button>
+    ))}
+  </nav>
+
+  <div class="flex items-baseline gap-3">
+    <span class="text-white/30 uppercase tracking-[0.2em] text-[10px] font-mono font-thin">sort</span>
+    <select id="sort-select" class="bg-transparent border-0 border-b border-white/20 focus:border-white outline-none text-xs font-mono font-thin py-0.5 text-white">
+      <option class="bg-black" value="updated">last activity</option>
+      <option class="bg-black" value="payment">earned</option>
+      <option class="bg-black" value="hours">hours</option>
+      <option class="bg-black" value="name">name</option>
+    </select>
+    <span class="text-white/20">·</span>
+    <span class="text-white/30 uppercase tracking-[0.2em] text-[10px] font-mono font-thin">search</span>
+    <input
+      id="search-input"
+      type="search"
+      placeholder=""
+      class="bg-transparent border-0 border-b border-white/20 focus:border-white outline-none text-xs font-mono font-thin py-0.5 w-40 md:w-56 text-white placeholder:text-white/30"
+    />
+  </div>
+</section>
+
+<script is:inline>
+(() => {
+  const filterEl = document.getElementById('status-filter');
+  const searchEl = document.getElementById('search-input');
+  const sortEl   = document.getElementById('sort-select');
+  const grid     = document.getElementById('project-grid');
+  const emptyEl  = document.getElementById('grid-empty');
+  if (!filterEl || !searchEl || !sortEl || !grid) return;
+
+  const cards = Array.from(grid.querySelectorAll('.card'));
+  let activeStatus = 'all';
+
+  function applyFilter() {
+    const q = searchEl.value.trim().toLowerCase();
+    let visible = 0;
+    for (const c of cards) {
+      const haystack = (c.dataset.search || '').toLowerCase();
+      const status = c.dataset.status || '';
+      const statusMatch = activeStatus === 'all' || status === activeStatus;
+      const textMatch   = q === '' || haystack.includes(q);
+      const show = statusMatch && textMatch;
+      c.style.display = show ? '' : 'none';
+      if (show) visible++;
+    }
+    if (emptyEl) emptyEl.style.display = visible === 0 ? '' : 'none';
+  }
+
+  function applySort() {
+    const mode = sortEl.value;
+    const getKey = (c) => {
+      if (mode === 'name')    return (c.dataset.name || '').toLowerCase();
+      if (mode === 'payment') return -Number(c.dataset.payment || 0);
+      if (mode === 'hours')   return -Number(c.dataset.hours || 0);
+      return -(Date.parse(c.dataset.updated || '') || 0);
+    };
+    const sorted = [...cards].sort((a, b) => {
+      const ka = getKey(a), kb = getKey(b);
+      if (ka < kb) return -1;
+      if (ka > kb) return  1;
+      return 0;
+    });
+    for (const c of sorted) grid.appendChild(c);
+  }
+
+  filterEl.addEventListener('click', (e) => {
+    const chip = e.target.closest('.status-chip');
+    if (!chip) return;
+    activeStatus = chip.dataset.status || 'all';
+    for (const c of filterEl.querySelectorAll('.status-chip')) {
+      const on = c === chip;
+      c.dataset.active = on ? 'true' : 'false';
+      c.classList.toggle('text-white', on);
+      c.classList.toggle('underline', on);
+      c.classList.toggle('text-white/50', !on);
+    }
+    applyFilter();
+  });
+
+  searchEl.addEventListener('input', applyFilter);
+  sortEl.addEventListener('change', applySort);
+  applySort();
+})();
+</script>

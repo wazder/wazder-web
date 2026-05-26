@@ -1,0 +1,252 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="ascii — wazder">
+  <main class="min-h-screen px-6 py-10 font-mono text-sm text-white">
+    <div class="max-w-3xl mx-auto">
+      <nav class="flex gap-4 mb-8 text-xs">
+        <button data-mode="text" class="mode-btn hover:underline underline-offset-4">text</button>
+        <button data-mode="image" class="mode-btn font-thin hover:underline underline-offset-4">image</button>
+      </nav>
+
+      <section id="text-mode">
+        <div class="flex items-baseline gap-2 mb-3">
+          <input
+            id="text-input"
+            type="text"
+            placeholder="type something"
+            class="flex-1 bg-transparent border-0 border-b border-white outline-none text-white font-mono text-sm pb-1 caret-white"
+            value="HELLO"
+          />
+          <select
+            id="font-select"
+            class="bg-black border border-white outline-none text-white text-xs font-mono px-2 py-1 rounded"
+          >
+            <option value="Standard">Standard</option>
+            <option value="Big">Big</option>
+            <option value="Slant">Slant</option>
+            <option value="Doom">Doom</option>
+            <option value="Ghost">Ghost</option>
+            <option value="ANSI Shadow">ANSI Shadow</option>
+            <option value="Banner">Banner</option>
+            <option value="Block">Block</option>
+            <option value="Bubble">Bubble</option>
+            <option value="Digital">Digital</option>
+            <option value="Mini">Mini</option>
+            <option value="Script">Script</option>
+            <option value="Shadow">Shadow</option>
+            <option value="Small">Small</option>
+            <option value="Star Wars">Star Wars</option>
+          </select>
+        </div>
+      </section>
+
+      <section id="image-mode" class="hidden">
+        <div class="flex items-center gap-3 mb-3">
+          <input id="image-input" type="file" accept="image/*" class="hidden" />
+          <button
+            id="image-pick"
+            type="button"
+            class="text-xs font-thin text-white border border-white hover:bg-white/[0.05] px-3 py-1 rounded transition-colors"
+          >
+            pick image
+          </button>
+          <label class="text-xs font-thin">width
+            <input
+              id="image-width"
+              type="number"
+              min="20"
+              max="1000"
+              value="100"
+              class="bg-black border border-white outline-none text-white text-xs font-mono w-20 px-2 py-0.5 ml-2"
+            />
+          </label>
+          <button
+            id="image-invert"
+            type="button"
+            data-on="false"
+            class="text-xs font-thin underline-offset-4 hover:underline"
+          >
+            invert
+          </button>
+        </div>
+      </section>
+
+      <div class="flex items-center justify-between text-xs mb-2 mt-6">
+        <span id="status" class="text-white font-thin"></span>
+        <div class="flex gap-3">
+          <button
+            id="copy-btn"
+            type="button"
+            class="text-xs font-thin hover:underline underline-offset-4"
+          >
+            copy
+          </button>
+          <button
+            id="download-btn"
+            type="button"
+            class="text-xs font-thin hover:underline underline-offset-4"
+          >
+            download
+          </button>
+        </div>
+      </div>
+
+      <pre
+        id="output"
+        class="bg-transparent border border-white rounded p-3 text-white text-[10px] leading-[1.05] whitespace-pre overflow-auto"
+        style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;"
+      ></pre>
+    </div>
+  </main>
+
+  <script>
+    import figlet from 'figlet';
+
+    figlet.defaults({ fontPath: 'https://unpkg.com/figlet@1.8.0/fonts' });
+
+    const modeBtns = document.querySelectorAll<HTMLButtonElement>('.mode-btn');
+    const textMode = document.getElementById('text-mode')!;
+    const imageMode = document.getElementById('image-mode')!;
+    const textInput = document.getElementById('text-input') as HTMLInputElement;
+    const fontSelect = document.getElementById('font-select') as HTMLSelectElement;
+    const imageInput = document.getElementById('image-input') as HTMLInputElement;
+    const imagePick = document.getElementById('image-pick') as HTMLButtonElement;
+    const imageWidth = document.getElementById('image-width') as HTMLInputElement;
+    const imageInvert = document.getElementById('image-invert') as HTMLButtonElement;
+    const output = document.getElementById('output')!;
+    const statusEl = document.getElementById('status')!;
+    const copyBtn = document.getElementById('copy-btn') as HTMLButtonElement;
+    const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+
+    let mode: 'text' | 'image' = 'text';
+    let lastImage: HTMLImageElement | null = null;
+    let lastOutput = '';
+
+    function setMode(m: 'text' | 'image') {
+      mode = m;
+      modeBtns.forEach((b) => {
+        const active = b.dataset.mode === m;
+        b.classList.toggle('font-bold', active);
+        b.classList.toggle('underline', active);
+        b.classList.toggle('font-thin', !active);
+      });
+      textMode.classList.toggle('hidden', m !== 'text');
+      imageMode.classList.toggle('hidden', m !== 'image');
+      render();
+    }
+
+    modeBtns.forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode as any)));
+
+    async function renderText() {
+      const text = textInput.value;
+      const font = fontSelect.value;
+      if (!text.trim()) { output.textContent = ''; return; }
+      statusEl.textContent = 'rendering…';
+      try {
+        const result = await new Promise<string>((resolve, reject) => {
+          figlet.text(text, { font: font as any }, (err, data) => {
+            if (err) reject(err);
+            else resolve(data ?? '');
+          });
+        });
+        lastOutput = result;
+        output.textContent = result;
+        statusEl.textContent = `${result.split('\n').length} lines · ${font}`;
+      } catch (e: any) {
+        statusEl.textContent = 'failed · ' + (e?.message ?? 'error');
+      }
+    }
+
+    async function renderImage() {
+      if (!lastImage) { output.textContent = ''; statusEl.textContent = ''; return; }
+      const w = Math.max(20, Math.min(1000, Number(imageWidth.value) || 100));
+      const invert = imageInvert.dataset.on === 'true';
+      const ratio = lastImage.height / lastImage.width;
+      const aspect = 0.5;
+      const h = Math.max(1, Math.floor(w * ratio * aspect));
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(lastImage, 0, 0, w, h);
+      const data = ctx.getImageData(0, 0, w, h).data;
+      const ramp = ' .\'`^",:;Il!i><~+_-?][}{1)(|/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$';
+      const chars = invert ? ramp.split('').reverse().join('') : ramp;
+      let out = '';
+      for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+          const i = (y * w + x) * 4;
+          const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+          const brightness = a === 0 ? 0 : (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+          out += chars[Math.floor(brightness * (chars.length - 1))];
+        }
+        out += '\n';
+      }
+      lastOutput = out;
+      output.textContent = out;
+      statusEl.textContent = `${w}×${h}`;
+    }
+
+    function render() {
+      if (mode === 'text') renderText();
+      else renderImage();
+    }
+
+    textInput.addEventListener('input', renderText);
+    fontSelect.addEventListener('change', renderText);
+
+    imagePick.addEventListener('click', () => imageInput.click());
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files?.[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        lastImage = img;
+        renderImage();
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    });
+    imageWidth.addEventListener('input', renderImage);
+    imageInvert.addEventListener('click', () => {
+      const on = imageInvert.dataset.on === 'true';
+      imageInvert.dataset.on = String(!on);
+      imageInvert.classList.toggle('underline', !on);
+      renderImage();
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      if (!lastOutput) return;
+      try {
+        await navigator.clipboard.writeText(lastOutput);
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = lastOutput;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      const prev = copyBtn.textContent;
+      copyBtn.textContent = 'copied';
+      setTimeout(() => (copyBtn.textContent = prev), 1000);
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      const text = lastOutput;
+      if (!text) return;
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ascii-${Date.now()}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    setMode('text');
+  </script>
+</Layout>

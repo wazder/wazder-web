@@ -1,0 +1,427 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="notes — wazder">
+  <main class="min-h-screen px-6 py-10 font-mono text-sm text-white">
+    <div class="max-w-2xl mx-auto">
+      <nav class="flex gap-4 mb-8 text-xs">
+        <button data-tab="public" class="tab-btn hover:underline underline-offset-4">public</button>
+        <button data-tab="private" class="tab-btn font-thin hover:underline underline-offset-4">private</button>
+        <button data-tab="admin" class="tab-btn font-thin hover:underline underline-offset-4">admin</button>
+        <span class="ml-auto"></span>
+        <button id="auth-action" class="font-thin hidden hover:underline underline-offset-4">logout</button>
+      </nav>
+
+      <section id="auth-prompt" class="hidden">
+        <div class="flex items-start gap-3">
+          <button
+            id="auth-btn"
+            type="button"
+            class="text-sm text-white border border-white hover:bg-white/[0.05] px-3 py-1 rounded transition-colors whitespace-nowrap shrink-0"
+          ></button>
+          <span id="auth-msg" class="text-xs text-white font-thin mt-1.5 break-words"></span>
+        </div>
+      </section>
+
+      <section id="notes-area" class="hidden">
+        <form id="note-form" class="flex items-start gap-2">
+          <span class="text-white font-thin select-none mt-[2px]">&gt;</span>
+          <textarea
+            name="text"
+            required
+            maxlength="5000"
+            rows="1"
+            class="flex-1 bg-transparent border-0 outline-none text-white caret-white resize-none leading-relaxed font-mono text-sm overflow-hidden"
+          ></textarea>
+        </form>
+
+        <div id="notes-list" class="mt-10 space-y-3"></div>
+      </section>
+
+      <section id="admin-area" class="hidden">
+        <div class="mb-8">
+          <h2 class="text-xs font-thin uppercase tracking-[0.2em] mb-3">public</h2>
+          <div id="admin-public-list" class="space-y-3"></div>
+        </div>
+        <div>
+          <h2 class="text-xs font-thin uppercase tracking-[0.2em] mb-3">private</h2>
+          <div id="admin-private-list" class="space-y-3"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+
+    type Note = { id: string; text: string; struck: [number, number][]; createdAt: number };
+    type Tab = 'public' | 'private' | 'admin';
+    type Coll = 'public' | 'private';
+
+    const tabs = document.querySelectorAll<HTMLButtonElement>('.tab-btn');
+    const notesArea = document.getElementById('notes-area')!;
+    const adminArea = document.getElementById('admin-area')!;
+    const authPrompt = document.getElementById('auth-prompt')!;
+    const authBtn = document.getElementById('auth-btn') as HTMLButtonElement;
+    const authMsg = document.getElementById('auth-msg')!;
+    const authAction = document.getElementById('auth-action') as HTMLButtonElement;
+    const form = document.getElementById('note-form') as HTMLFormElement;
+    const textarea = form.querySelector('textarea')!;
+    const list = document.getElementById('notes-list')!;
+    const adminPubList = document.getElementById('admin-public-list')!;
+    const adminPrivList = document.getElementById('admin-private-list')!;
+
+    let currentTab: Tab = 'public';
+    let notes: Note[] = [];
+    let adminData: { public: Note[]; private: Note[] } = { public: [], private: [] };
+    let authed = false;
+
+    function setActiveTab(tab: Tab) {
+      tabs.forEach((b) => {
+        const active = b.dataset.tab === tab;
+        b.classList.toggle('font-bold', active);
+        b.classList.toggle('underline', active);
+        b.classList.toggle('underline-offset-4', active);
+        b.classList.toggle('font-thin', !active);
+      });
+    }
+
+    function autoGrow() {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    }
+    textarea.addEventListener('input', autoGrow);
+
+    function escapeHtml(s: string) {
+      return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+    }
+
+    function renderText(text: string, struck: [number, number][]) {
+      if (!struck || !struck.length) return escapeHtml(text);
+      const sorted = [...struck].sort((a, b) => a[0] - b[0]);
+      let out = '';
+      let cursor = 0;
+      for (const [s, e] of sorted) {
+        out += escapeHtml(text.slice(cursor, s));
+        out += `<del>${escapeHtml(text.slice(s, e))}</del>`;
+        cursor = e;
+      }
+      out += escapeHtml(text.slice(cursor));
+      return out;
+    }
+
+    function noteRow(note: Note, opts: { coll?: Coll; admin?: boolean } = {}) {
+      const pending = note.id.startsWith('tmp-') ? ' italic' : '';
+      const showDelete = authed || opts.admin;
+      const showMove = opts.admin;
+      const otherColl: Coll = opts.coll === 'public' ? 'private' : 'public';
+      const moveArrow = opts.coll === 'public' ? '→ priv' : '→ pub';
+      const moveBtn = showMove
+        ? `<button class="move-btn text-white font-thin hover:opacity-70 transition-opacity text-xs mt-1 px-1" data-to="${otherColl}" type="button">${moveArrow}</button>`
+        : '';
+      const deleteBtn = showDelete
+        ? `<button class="delete-btn text-white font-thin hover:opacity-70 transition-opacity text-xs mt-1 px-1" type="button">×</button>`
+        : '';
+      const dataColl = opts.coll ? ` data-coll="${opts.coll}"` : '';
+      return `<article data-id="${note.id}"${dataColl} class="flex items-start gap-2${pending}">
+        <span class="text-white font-thin select-none mt-[2px]">·</span>
+        <div class="flex-1">
+          <div class="note-text whitespace-pre-wrap break-words leading-relaxed">${renderText(note.text, note.struck)}</div>
+        </div>
+        <button class="strike-btn text-white font-thin hover:opacity-70 transition-opacity text-xs mt-1 px-1" type="button" aria-label="strike">—</button>
+        ${moveBtn}
+        ${deleteBtn}
+      </article>`;
+    }
+
+    function attachHandlers(container: HTMLElement, coll: Coll) {
+      container.querySelectorAll('.strike-btn').forEach((b) =>
+        b.addEventListener('click', () => handleStrike(b as HTMLButtonElement, coll)),
+      );
+      container.querySelectorAll('.delete-btn').forEach((b) =>
+        b.addEventListener('click', () => handleDelete(b as HTMLButtonElement, coll)),
+      );
+      container.querySelectorAll('.move-btn').forEach((b) =>
+        b.addEventListener('click', () => handleMove(b as HTMLButtonElement)),
+      );
+    }
+
+    function renderList() {
+      const coll: Coll = currentTab === 'private' ? 'private' : 'public';
+      list.innerHTML = notes.map((n) => noteRow(n, { coll })).join('');
+      attachHandlers(list, coll);
+    }
+
+    function renderAdmin() {
+      adminPubList.innerHTML = adminData.public.map((n) => noteRow(n, { coll: 'public', admin: true })).join('');
+      adminPrivList.innerHTML = adminData.private.map((n) => noteRow(n, { coll: 'private', admin: true })).join('');
+      attachHandlers(adminPubList, 'public');
+      attachHandlers(adminPrivList, 'private');
+    }
+
+    function getTextOffset(container: Node, node: Node, offset: number): number {
+      let total = 0;
+      let found = false;
+      function walk(n: Node) {
+        if (found) return;
+        if (n === node) { total += offset; found = true; return; }
+        if (n.nodeType === Node.TEXT_NODE) { total += n.textContent!.length; return; }
+        for (const child of Array.from(n.childNodes)) { walk(child); if (found) return; }
+      }
+      walk(container);
+      return found ? total : -1;
+    }
+
+    function getSelectionInNote(noteEl: HTMLElement) {
+      const textEl = noteEl.querySelector('.note-text')!;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return null;
+      const range = sel.getRangeAt(0);
+      if (!textEl.contains(range.startContainer) || !textEl.contains(range.endContainer)) return null;
+      const a = getTextOffset(textEl, range.startContainer, range.startOffset);
+      const b = getTextOffset(textEl, range.endContainer, range.endOffset);
+      if (a < 0 || b < 0 || a === b) return null;
+      return { start: Math.min(a, b), end: Math.max(a, b) };
+    }
+
+    function mergeStruck(existing: [number, number][], range: { start: number; end: number }): [number, number][] {
+      const all: [number, number][] = [...(existing || []), [range.start, range.end]].sort((a, b) => a[0] - b[0]);
+      const out: [number, number][] = [[all[0][0], all[0][1]]];
+      for (let i = 1; i < all.length; i++) {
+        const last = out[out.length - 1];
+        if (all[i][0] <= last[1]) last[1] = Math.max(last[1], all[i][1]);
+        else out.push([all[i][0], all[i][1]]);
+      }
+      return out;
+    }
+
+    async function handleStrike(btn: HTMLButtonElement, coll: Coll) {
+      const noteEl = btn.closest('[data-id]') as HTMLElement;
+      const id = noteEl.dataset.id!;
+      const range = getSelectionInNote(noteEl);
+      if (!range) {
+        btn.classList.add('text-yellow-300/60');
+        setTimeout(() => btn.classList.remove('text-yellow-300/60'), 600);
+        return;
+      }
+      const targetList = currentTab === 'admin' ? adminData[coll] : notes;
+      const note = targetList.find((n) => n.id === id);
+      if (note) {
+        note.struck = mergeStruck(note.struck, range);
+        currentTab === 'admin' ? renderAdmin() : renderList();
+      }
+      window.getSelection()?.removeAllRanges();
+      try {
+        await fetch(`/api/notes/strike?collection=${coll}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ id, ...range }),
+        });
+      } catch {}
+    }
+
+    async function handleDelete(btn: HTMLButtonElement, coll: Coll) {
+      const noteEl = btn.closest('[data-id]') as HTMLElement;
+      const id = noteEl.dataset.id!;
+      btn.disabled = true;
+      if (currentTab === 'admin') {
+        adminData[coll] = adminData[coll].filter((n) => n.id !== id);
+        renderAdmin();
+      } else {
+        notes = notes.filter((n) => n.id !== id);
+        renderList();
+      }
+      await fetch(`/api/notes/delete?collection=${coll}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+    }
+
+    async function handleMove(btn: HTMLButtonElement) {
+      const noteEl = btn.closest('[data-id]') as HTMLElement;
+      const id = noteEl.dataset.id!;
+      const from = noteEl.dataset.coll as Coll;
+      const to = btn.dataset.to as Coll;
+      btn.disabled = true;
+      const note = adminData[from].find((n) => n.id === id);
+      if (!note) return;
+      adminData[from] = adminData[from].filter((n) => n.id !== id);
+      adminData[to] = [note, ...adminData[to]];
+      renderAdmin();
+      await fetch('/api/notes/move', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id, from, to }),
+      });
+    }
+
+    async function loadNotes() {
+      const coll = currentTab === 'private' ? 'private' : 'public';
+      const res = await fetch(`/api/notes?collection=${coll}`);
+      if (!res.ok) {
+        notes = [];
+        renderList();
+        return;
+      }
+      notes = await res.json();
+      renderList();
+    }
+
+    async function loadAdmin() {
+      const res = await fetch('/api/notes/admin');
+      if (!res.ok) return;
+      adminData = await res.json();
+      renderAdmin();
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = textarea.value.trim();
+      if (!text) return;
+      const coll: Coll = currentTab === 'private' ? 'private' : 'public';
+      const optimistic: Note = {
+        id: 'tmp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+        text,
+        struck: [],
+        createdAt: Date.now(),
+      };
+      notes = [optimistic, ...notes];
+      renderList();
+      textarea.value = '';
+      autoGrow();
+      textarea.focus();
+      try {
+        await fetch(`/api/notes?collection=${coll}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ text }),
+        });
+        await loadNotes();
+      } catch {}
+    });
+
+    textarea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    async function doRegister() {
+      authMsg.textContent = '';
+      try {
+        const optsRes = await fetch('/api/auth/passkey/register-start', { method: 'POST' });
+        if (!optsRes.ok) { authMsg.textContent = 'failed'; return false; }
+        const opts = await optsRes.json();
+        const attestation = await startRegistration({ optionsJSON: opts });
+        const r = await fetch('/api/auth/passkey/register-finish', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(attestation),
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          authMsg.textContent = (err.error || 'verify failed') + (err.detail ? ': ' + err.detail : '');
+          return false;
+        }
+        return true;
+      } catch (e: any) {
+        authMsg.textContent = e?.name === 'NotAllowedError' ? 'cancelled' : (e?.message ?? 'failed');
+        return false;
+      }
+    }
+
+    async function doLogin() {
+      authMsg.textContent = '';
+      try {
+        const optsRes = await fetch('/api/auth/passkey/login-start', { method: 'POST' });
+        if (!optsRes.ok) { authMsg.textContent = 'no passkey'; return false; }
+        const opts = await optsRes.json();
+        const assertion = await startAuthentication({ optionsJSON: opts });
+        const r = await fetch('/api/auth/passkey/login-finish', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(assertion),
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          authMsg.textContent = (err.error || 'verify failed') + (err.detail ? ': ' + err.detail : '');
+          return false;
+        }
+        return true;
+      } catch (e: any) {
+        authMsg.textContent = e?.name === 'NotAllowedError' ? 'cancelled' : (e?.message ?? 'failed');
+        return false;
+      }
+    }
+
+    async function checkAuth() {
+      const r = await fetch('/api/auth/me');
+      const d = await r.json();
+      authed = !!d.authed;
+    }
+
+    function hideAll() {
+      notesArea.classList.add('hidden');
+      adminArea.classList.add('hidden');
+      authPrompt.classList.add('hidden');
+    }
+
+    async function showTab(tab: Tab) {
+      currentTab = tab;
+      setActiveTab(tab);
+      const needsAuth = tab !== 'public';
+      if (needsAuth && !authed) {
+        hideAll();
+        authPrompt.classList.remove('hidden');
+        const status = await fetch('/api/auth/passkey/status').then((r) => r.json());
+        authBtn.textContent = status.hasCredentials ? 'sign in with passkey' : 'register passkey';
+        authBtn.dataset.mode = status.hasCredentials ? 'login' : 'register';
+        return;
+      }
+      hideAll();
+      if (tab === 'admin') {
+        adminArea.classList.remove('hidden');
+        await loadAdmin();
+      } else {
+        notesArea.classList.remove('hidden');
+        await loadNotes();
+      }
+    }
+
+    function updateAuthAction() {
+      authAction.classList.toggle('hidden', !authed);
+    }
+
+    authBtn.addEventListener('click', async () => {
+      authBtn.disabled = true;
+      const mode = authBtn.dataset.mode;
+      const ok = mode === 'register' ? await doRegister() : await doLogin();
+      authBtn.disabled = false;
+      if (ok) {
+        authed = true;
+        updateAuthAction();
+        await showTab(currentTab);
+      }
+    });
+
+    authAction.addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      authed = false;
+      updateAuthAction();
+      await showTab('public');
+    });
+
+    tabs.forEach((b) => {
+      b.addEventListener('click', () => showTab(b.dataset.tab as Tab));
+    });
+
+    (async () => {
+      await checkAuth();
+      updateAuthAction();
+      await showTab('public');
+    })();
+  </script>
+</Layout>

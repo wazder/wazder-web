@@ -1,0 +1,35 @@
+---
+import type { TimeEntry } from '../../lib/flaw/types';
+import { formatDate, formatHours, sumHours } from '../../lib/flaw/format';
+
+interface Props {
+  entries: TimeEntry[];
+}
+const { entries } = Astro.props;
+
+const total = sumHours(entries);
+const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date));
+---
+
+<section>
+  <header class="flex items-baseline justify-between border-b border-white/10 pb-2 mb-3">
+    <h2 class="text-[10px] font-mono font-thin uppercase tracking-[0.2em] text-white/40">time log</h2>
+    <div class="text-sm font-light tabular-nums">{total > 0 ? formatHours(total) : '—'}</div>
+  </header>
+
+  {entries.length === 0 ? (
+    <p class="text-xs font-mono font-thin text-white/30 py-2">no time entries yet.</p>
+  ) : (
+    <ul class="divide-y divide-white/5">
+      {sorted.map((e) => (
+        <li class="py-2 grid grid-cols-[1fr_auto] gap-3 items-baseline">
+          <div class="min-w-0">
+            <div class="text-sm text-white truncate">{e.description}</div>
+            <div class="text-[10px] font-mono font-thin text-white/40 tabular-nums">{formatDate(e.date)}</div>
+          </div>
+          <div class="text-sm font-light tabular-nums">{formatHours(e.hours)}</div>
+        </li>
+      ))}
+    </ul>
+  )}
+</section>

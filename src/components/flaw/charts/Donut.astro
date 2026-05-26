@@ -1,0 +1,65 @@
+---
+interface Segment {
+  label: string;
+  value: number;
+  color: string;
+}
+
+interface Props {
+  segments: Segment[];
+  size?: number;
+  thickness?: number;
+  centerLabel?: string;
+  centerSub?: string;
+}
+const { segments, size = 120, thickness = 10, centerLabel = '', centerSub = '' } = Astro.props;
+
+const total = segments.reduce((s, x) => s + x.value, 0);
+const r = (size - thickness) / 2;
+const circ = 2 * Math.PI * r;
+const cx = size / 2;
+const cy = size / 2;
+
+const arcs: { dasharray: string; offset: number; color: string }[] = [];
+let acc = 0;
+if (total > 0) {
+  for (const s of segments) {
+    const frac = s.value / total;
+    const len = frac * circ;
+    arcs.push({
+      dasharray: `${len.toFixed(2)} ${(circ - len).toFixed(2)}`,
+      offset: (circ - acc) % circ,
+      color: s.color,
+    });
+    acc += len;
+  }
+}
+---
+
+<svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} class="block">
+  <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.08)" stroke-width={thickness} />
+  {arcs.map((a) => (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={r}
+      fill="none"
+      stroke={a.color}
+      stroke-width={thickness}
+      stroke-dasharray={a.dasharray}
+      stroke-dashoffset={a.offset}
+      transform={`rotate(-90 ${cx} ${cy})`}
+      stroke-linecap="butt"
+    />
+  ))}
+  {centerLabel && (
+    <text x={cx} y={cy - 2} text-anchor="middle" fill="#fff" font-family="ui-monospace, monospace" font-size={size * 0.18} font-weight="300">
+      {centerLabel}
+    </text>
+  )}
+  {centerSub && (
+    <text x={cx} y={cy + size * 0.13} text-anchor="middle" fill="rgba(255,255,255,0.4)" font-family="ui-monospace, monospace" font-size={size * 0.08}>
+      {centerSub}
+    </text>
+  )}
+</svg>

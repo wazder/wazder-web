@@ -1,0 +1,200 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="edit — wazder">
+  <main class="min-h-screen px-6 py-10 font-mono text-sm text-white">
+    <div class="max-w-2xl mx-auto">
+      <section id="auth-prompt" class="hidden">
+        <div class="flex items-start gap-3">
+          <button
+            id="auth-btn"
+            type="button"
+            class="text-sm text-white border border-white hover:bg-white/[0.05] px-3 py-1 rounded transition-colors whitespace-nowrap shrink-0"
+          ></button>
+          <span id="auth-msg" class="text-xs text-white font-thin mt-1.5 break-words"></span>
+        </div>
+      </section>
+
+      <section id="list-section" class="hidden">
+        <div id="delete-list" class="space-y-1"></div>
+        <p id="empty-msg" class="text-white font-thin text-xs hidden">nothing to delete</p>
+        <p id="delete-msg" class="text-xs text-white font-thin mt-6 min-h-[1em]"></p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+
+    const authPrompt = document.getElementById('auth-prompt')!;
+    const authBtn = document.getElementById('auth-btn') as HTMLButtonElement;
+    const authMsg = document.getElementById('auth-msg')!;
+    const listSection = document.getElementById('list-section')!;
+    const list = document.getElementById('delete-list')!;
+    const emptyMsg = document.getElementById('empty-msg')!;
+    const deleteMsg = document.getElementById('delete-msg')!;
+
+    let mode: 'register' | 'login' = 'login';
+
+    function fmtSize(n?: number) {
+      if (n == null) return '';
+      if (n < 1024) return n + 'b';
+      if (n < 1024 * 1024) return (n / 1024).toFixed(1) + 'k';
+      return (n / 1024 / 1024).toFixed(1) + 'm';
+    }
+
+    async function loadList() {
+      const res = await fetch('/api/hub');
+      const data = await res.json();
+      const userItems = data.items.filter((i: any) => !i.static);
+      if (userItems.length === 0) {
+        list.innerHTML = '';
+        emptyMsg.classList.remove('hidden');
+        return;
+      }
+      emptyMsg.classList.add('hidden');
+      list.innerHTML = userItems
+        .map((item: any) => {
+          const markerColor = item.public ? '#22C55E' : '#EF4444';
+          const markerText = item.public ? 'public' : 'locked';
+          const flipLabel = item.public ? '→ lock' : '→ unlock';
+          const meta = [item.format, fmtSize(item.size)].filter(Boolean).join(' ');
+          return `<div data-path="${item.path}" data-public="${item.public}" class="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 items-baseline py-1 -mx-2 px-2 group">
+            <a href="/${item.path}" class="text-white hover:underline underline-offset-4">/${item.path}</a>
+            <span class="text-white text-xs font-thin">${meta}</span>
+            <span class="italic font-thin text-xs" style="color:${markerColor}">${markerText}</span>
+            <button class="flip-btn text-white text-xs font-thin hover:underline underline-offset-4" type="button">${flipLabel}</button>
+            <button class="del-btn text-red-300/70 hover:text-red-300 hover:underline hover:decoration-white underline-offset-4 text-xs" type="button">delete</button>
+          </div>`;
+        })
+        .join('');
+      list.querySelectorAll('.del-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => onDelete(e.target as HTMLButtonElement));
+      });
+      list.querySelectorAll('.flip-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => onFlip(e.target as HTMLButtonElement));
+      });
+    }
+
+    async function onFlip(btn: HTMLButtonElement) {
+      const row = btn.closest('[data-path]') as HTMLElement;
+      const path = row.dataset.path!;
+      const wasPublic = row.dataset.public === 'true';
+      btn.disabled = true;
+      deleteMsg.textContent = `flipping /${path}…`;
+      try {
+        const res = await fetch('/api/visibility', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ path, public: !wasPublic }),
+        });
+        if (!res.ok) {
+          deleteMsg.textContent = 'failed';
+          btn.disabled = false;
+          return;
+        }
+        deleteMsg.textContent = `now ${!wasPublic ? 'public' : 'locked'} · /${path}`;
+        await loadList();
+      } catch {
+        deleteMsg.textContent = 'network error';
+        btn.disabled = false;
+      }
+    }
+
+    async function onDelete(btn: HTMLButtonElement) {
+      const row = btn.closest('[data-path]') as HTMLElement;
+      const path = row.dataset.path!;
+      if (!confirm(`delete /${path}?`)) return;
+      btn.disabled = true;
+      deleteMsg.textContent = `deleting /${path}…`;
+      try {
+        const res = await fetch(`/api/upload?path=${encodeURIComponent(path)}`, { method: 'DELETE' });
+        if (!res.ok) {
+          deleteMsg.textContent = 'failed';
+          btn.disabled = false;
+          return;
+        }
+        deleteMsg.textContent = `deleted /${path}`;
+        await loadList();
+      } catch {
+        deleteMsg.textContent = 'network error';
+        btn.disabled = false;
+      }
+    }
+
+    async function doRegister() {
+      authMsg.textContent = '';
+      try {
+        const r = await fetch('/api/auth/passkey/register-start', { method: 'POST' });
+        if (!r.ok) { authMsg.textContent = 'failed'; return false; }
+        const opts = await r.json();
+        const att = await startRegistration({ optionsJSON: opts });
+        const f = await fetch('/api/auth/passkey/register-finish', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(att),
+        });
+        if (!f.ok) {
+          const err = await f.json().catch(() => ({}));
+          authMsg.textContent = (err.error || 'verify failed') + (err.detail ? ': ' + err.detail : '');
+          return false;
+        }
+        return true;
+      } catch (e: any) {
+        authMsg.textContent = e?.name === 'NotAllowedError' ? 'cancelled' : (e?.message ?? 'failed');
+        return false;
+      }
+    }
+
+    async function doLogin() {
+      authMsg.textContent = '';
+      try {
+        const r = await fetch('/api/auth/passkey/login-start', { method: 'POST' });
+        if (!r.ok) { authMsg.textContent = 'no passkey'; return false; }
+        const opts = await r.json();
+        const ass = await startAuthentication({ optionsJSON: opts });
+        const f = await fetch('/api/auth/passkey/login-finish', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(ass),
+        });
+        if (!f.ok) {
+          const err = await f.json().catch(() => ({}));
+          authMsg.textContent = (err.error || 'verify failed') + (err.detail ? ': ' + err.detail : '');
+          return false;
+        }
+        return true;
+      } catch (e: any) {
+        authMsg.textContent = e?.name === 'NotAllowedError' ? 'cancelled' : (e?.message ?? 'failed');
+        return false;
+      }
+    }
+
+    async function init() {
+      const auth = await fetch('/api/auth/me').then((r) => r.json());
+      if (auth.authed) {
+        listSection.classList.remove('hidden');
+        await loadList();
+        return;
+      }
+      const status = await fetch('/api/auth/passkey/status').then((r) => r.json());
+      mode = status.hasCredentials ? 'login' : 'register';
+      authBtn.textContent = mode === 'login' ? 'sign in with passkey' : 'register passkey';
+      authPrompt.classList.remove('hidden');
+    }
+
+    authBtn.addEventListener('click', async () => {
+      authBtn.disabled = true;
+      const ok = mode === 'register' ? await doRegister() : await doLogin();
+      authBtn.disabled = false;
+      if (ok) {
+        authPrompt.classList.add('hidden');
+        listSection.classList.remove('hidden');
+        await loadList();
+      }
+    });
+
+    init();
+  </script>
+</Layout>

@@ -1,0 +1,71 @@
+---
+import type { Project } from '../../../lib/flaw/types';
+
+interface Props {
+  projects: Project[];
+  weeks?: number;
+}
+const { projects, weeks = 26 } = Astro.props;
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+const dayMs = 24 * 60 * 60 * 1000;
+
+const counts = new Map<string, number>();
+for (const p of projects) {
+  for (const e of p.timeEntries) {
+    counts.set(e.date.slice(0, 10), (counts.get(e.date.slice(0, 10)) ?? 0) + e.hours);
+  }
+  for (const py of p.payments) {
+    counts.set(py.date.slice(0, 10), (counts.get(py.date.slice(0, 10)) ?? 0) + 0.5);
+  }
+  for (const t of p.tasks) if (t.date) {
+    counts.set(t.date.slice(0, 10), (counts.get(t.date.slice(0, 10)) ?? 0) + 0.25);
+  }
+}
+
+const totalDays = weeks * 7;
+const startTs = today.getTime() - (totalDays - 1) * dayMs;
+
+const cells: { date: string; value: number }[] = [];
+for (let i = 0; i < totalDays; i++) {
+  const d = new Date(startTs + i * dayMs);
+  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  cells.push({ date: key, value: counts.get(key) ?? 0 });
+}
+
+const max = Math.max(1, ...cells.map((c) => c.value));
+function shade(v: number): string {
+  if (v <= 0) return 'rgba(255,255,255,0.04)';
+  const t = Math.min(1, Math.sqrt(v / max));
+  const alpha = 0.18 + t * 0.72;
+  return `rgba(255,255,255,${alpha.toFixed(2)})`;
+}
+
+const cellSize = 12;
+const gap = 2;
+const cols = weeks;
+const rows = 7;
+const width = cols * (cellSize + gap);
+const height = rows * (cellSize + gap);
+---
+
+<div class="overflow-x-auto">
+  <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} class="block">
+    {cells.map((c, i) => {
+      const col = Math.floor(i / 7);
+      const row = i % 7;
+      return (
+        <rect
+          x={col * (cellSize + gap)}
+          y={row * (cellSize + gap)}
+          width={cellSize}
+          height={cellSize}
+          fill={shade(c.value)}
+        >
+          <title>{c.date} · {c.value > 0 ? `${c.value.toFixed(1)} u` : 'no activity'}</title>
+        </rect>
+      );
+    })}
+  </svg>
+</div>

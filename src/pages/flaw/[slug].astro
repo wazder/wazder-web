@@ -1,0 +1,189 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import StatusMarker from '../../components/flaw/StatusMarker.astro';
+import PaymentTable from '../../components/flaw/PaymentTable.astro';
+import TimeLog from '../../components/flaw/TimeLog.astro';
+import TaskList from '../../components/flaw/TaskList.astro';
+import MonthlyBars from '../../components/flaw/charts/MonthlyBars.astro';
+import Donut from '../../components/flaw/charts/Donut.astro';
+import { loadProjects } from '../../lib/flaw/projects';
+import {
+  formatDate,
+  formatHours,
+  formatMoney,
+  sumHours,
+  sumPaymentsByCurrency,
+  bucketByMonth,
+  lastActivity,
+} from '../../lib/flaw/format';
+import type { Currency } from '../../lib/flaw/types';
+
+export function getStaticPaths() {
+  return loadProjects().map((p) => ({
+    params: { slug: p.id },
+    props: { project: p },
+  }));
+}
+
+const { project } = Astro.props;
+
+const buckets = bucketByMonth(project, 12);
+const totalHours = sumHours(project.timeEntries);
+const totals = sumPaymentsByCurrency(project.payments);
+const earnedLines = (Object.entries(totals) as [Currency, number][]).filter(([, v]) => v > 0);
+
+const tasksDone = project.tasks.filter((t) => t.status === 'done').length;
+const tasksInProgress = project.tasks.filter((t) => t.status === 'in_progress').length;
+const tasksTodo = project.tasks.filter((t) => t.status === 'todo').length;
+const taskTotal = project.tasks.length;
+const pct = taskTotal === 0 ? 0 : Math.round((tasksDone / taskTotal) * 100);
+
+const updated = lastActivity(project);
+---
+
+<Layout title={`${project.name} — flaw`} description={project.description}>
+  <main class="min-h-screen font-mono text-white">
+    <div class="max-w-5xl mx-auto px-5 md:px-8 py-10">
+
+      <header class="flex items-baseline justify-between">
+        <div class="flex items-baseline gap-3 text-xs font-thin min-w-0">
+          <a href="/" class="text-white/40 hover:text-white">wazder</a>
+          <span class="text-white/20">/</span>
+          <a href="/flaw" class="text-white/40 hover:text-white">flaw</a>
+          <span class="text-white/20">/</span>
+          <span class="text-white truncate">{project.id}</span>
+        </div>
+        <a href="/flaw" class="text-[11px] font-thin text-white/40 hover:text-white hover:underline underline-offset-4 shrink-0">← back</a>
+      </header>
+
+      <section class="mt-10 pb-8 border-b border-white/10">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            {project.category && (
+              <div class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">{project.category}</div>
+            )}
+            <h1 class="mt-2 font-sans font-light tracking-tight text-3xl md:text-4xl">{project.name}</h1>
+          </div>
+          <StatusMarker status={project.status} size="md" />
+        </div>
+
+        <p class="mt-4 text-sm font-thin text-white/60 max-w-3xl leading-relaxed">{project.description}</p>
+
+        <dl class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4 text-xs">
+          <div>
+            <dt class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">started</dt>
+            <dd class="mt-1 text-white tabular-nums">{formatDate(project.startDate)}</dd>
+          </div>
+          <div>
+            <dt class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">ended</dt>
+            <dd class="mt-1 text-white tabular-nums">{project.endDate ? formatDate(project.endDate) : '—'}</dd>
+          </div>
+          <div>
+            <dt class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">last activity</dt>
+            <dd class="mt-1 text-white tabular-nums">{formatDate(updated)}</dd>
+          </div>
+          <div class="md:text-right">
+            <dt class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">folder</dt>
+            <dd class="mt-1 text-white truncate">{project.folderPath}</dd>
+          </div>
+        </dl>
+
+        {project.techStack.length > 0 && (
+          <div class="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[11px] font-thin text-white/50">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-white/30">stack</span>
+            {project.techStack.map((t, i) => (
+              <>
+                {i > 0 && <span class="text-white/15">·</span>}
+                <span class="text-white/70">{t}</span>
+              </>
+            ))}
+          </div>
+        )}
+
+        {project.links && project.links.length > 0 && (
+          <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs font-thin">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-white/30">links</span>
+            {project.links.map((l) => (
+              <a href={l.url} target="_blank" rel="noopener" class="text-white hover:underline underline-offset-4">
+                {l.label} ↗
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section class="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2">
+          <div class="flex items-baseline justify-between border-b border-white/10 pb-2">
+            <h2 class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">earned · monthly</h2>
+            <div class="text-right space-y-0.5">
+              {earnedLines.length === 0 ? (
+                <span class="text-xs font-thin text-white/30">no payments</span>
+              ) : (
+                earnedLines.map(([cur, amt]) => (
+                  <div class="text-sm font-light tabular-nums">{formatMoney(amt, cur)}</div>
+                ))
+              )}
+            </div>
+          </div>
+          <div class="mt-5">
+            <MonthlyBars buckets={buckets} metric="payment" height={140} />
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-baseline justify-between border-b border-white/10 pb-2">
+            <h2 class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">tasks · progress</h2>
+            <div class="text-sm font-light tabular-nums">{pct}%</div>
+          </div>
+          <div class="mt-5 flex items-center gap-5">
+            <Donut
+              segments={[
+                { label: 'done',        value: tasksDone,       color: '#22C55E' },
+                { label: 'in progress', value: tasksInProgress, color: '#F59E0B' },
+                { label: 'todo',        value: tasksTodo,       color: 'rgba(255,255,255,0.5)' },
+              ]}
+              size={110}
+              thickness={10}
+              centerLabel={taskTotal > 0 ? `${tasksDone}/${taskTotal}` : '—'}
+              centerSub={taskTotal > 0 ? 'done' : 'no tasks'}
+            />
+            <ul class="space-y-1.5 text-[11px] font-thin">
+              <li class="flex items-center gap-2"><span class="size-1.5 rounded-full" style="background:#22C55E"></span>done <span class="text-white/40 ml-1 tabular-nums">{tasksDone}</span></li>
+              <li class="flex items-center gap-2"><span class="size-1.5 rounded-full" style="background:#F59E0B"></span>in progress <span class="text-white/40 ml-1 tabular-nums">{tasksInProgress}</span></li>
+              <li class="flex items-center gap-2"><span class="size-1.5 rounded-full bg-white/40"></span>todo <span class="text-white/40 ml-1 tabular-nums">{tasksTodo}</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-10">
+        <div class="flex items-baseline justify-between border-b border-white/10 pb-2">
+          <h2 class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">hours · monthly</h2>
+          <div class="text-sm font-light tabular-nums">{totalHours > 0 ? formatHours(totalHours) : '—'}</div>
+        </div>
+        <div class="mt-5">
+          <MonthlyBars buckets={buckets} metric="hours" height={120} />
+        </div>
+      </section>
+
+      <section class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-x-10 gap-y-10">
+        <PaymentTable payments={project.payments} />
+        <TimeLog entries={project.timeEntries} />
+        <TaskList tasks={project.tasks} />
+      </section>
+
+      {project.notes && (
+        <section class="mt-12">
+          <h2 class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40 border-b border-white/10 pb-2 mb-3">notes</h2>
+          <p class="text-sm font-thin text-white/70 whitespace-pre-wrap leading-relaxed">{project.notes}</p>
+        </section>
+      )}
+
+      <footer class="mt-16 pt-6 border-t border-white/10 flex items-baseline justify-between text-[10px] font-thin text-white/30">
+        <a href="/flaw" class="hover:text-white">← all projects</a>
+        <span>id: <span class="text-white/50">{project.id}</span></span>
+      </footer>
+    </div>
+  </main>
+</Layout>

@@ -1,0 +1,354 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="upload — wazder">
+  <main class="min-h-screen px-6 py-10 font-mono text-sm text-white">
+    <div class="max-w-2xl mx-auto">
+      <section id="upload-section">
+        <form id="upload-form" class="space-y-4">
+          <div class="flex items-baseline gap-2">
+            <span class="text-white select-none">wazder.com/</span>
+            <input
+              id="path-input"
+              name="path"
+              required
+              autocomplete="off"
+              class="flex-1 bg-transparent border-0 border-b border-white outline-none text-white font-mono text-sm pb-1 caret-white"
+            />
+            <button
+              id="random-path-btn"
+              type="button"
+              class="text-xs font-thin text-white hover:underline underline-offset-4 transition-opacity px-2"
+              aria-label="generate random path"
+            >
+              rand
+            </button>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <select
+              name="format"
+              class="bg-black border border-white outline-none text-white text-xs font-mono px-2 py-1 rounded"
+            >
+              <option value="md">md</option>
+              <option value="html">html</option>
+              <option value="text">text</option>
+              <option value="json">json</option>
+              <option value="python">python</option>
+            </select>
+            <button
+              type="button"
+              data-public="true"
+              class="vis-toggle text-xs font-mono px-2 py-1 transition-colors hover:underline hover:decoration-white underline-offset-4"
+              style="color: #22C55E;"
+            >
+              public
+            </button>
+            <button
+              id="signin-btn"
+              type="button"
+              class="text-xs font-thin hover:underline underline-offset-4 hidden"
+            >
+              sign in for private
+            </button>
+          </div>
+
+          <textarea
+            name="content"
+            required
+            autocomplete="off"
+            class="w-full bg-transparent border border-white rounded p-3 text-white min-h-[120px] focus:outline-none resize-y font-mono text-sm leading-relaxed caret-white"
+          ></textarea>
+
+          <div class="flex items-center justify-between text-xs">
+            <p id="upload-msg" class="text-white font-thin min-h-[1em]"></p>
+            <div class="flex gap-3">
+              <button
+                type="button"
+                id="add-passkey-btn"
+                class="text-white font-thin hover:underline underline-offset-4 hidden"
+              >
+                + passkey
+              </button>
+              <button
+                type="button"
+                id="logout-btn"
+                class="text-white font-thin hover:underline underline-offset-4 hidden"
+              >
+                logout
+              </button>
+              <button
+                type="submit"
+                class="text-white border border-white hover:bg-white/[0.05] px-3 py-1 rounded transition-colors"
+              >
+                save
+              </button>
+            </div>
+          </div>
+        </form>
+        <p id="auth-msg" class="text-xs text-white font-thin mt-3"></p>
+
+        <hr class="my-10 border-white/20" />
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-thin text-white" for="folder-input">upload folder or files</label>
+            <div class="flex items-center gap-3">
+              <button
+                id="folder-btn"
+                type="button"
+                class="text-xs font-thin text-white hover:underline underline-offset-4 px-2"
+              >
+                pick
+              </button>
+              <button
+                type="button"
+                data-public="true"
+                class="vis-toggle text-xs font-mono px-2 py-1 transition-colors hover:underline hover:decoration-white underline-offset-4"
+                style="color: #22C55E;"
+              >
+                public
+              </button>
+            </div>
+          </div>
+          <input id="folder-input" type="file" multiple class="hidden" />
+          <p id="folder-msg" class="text-xs text-white font-thin min-h-[1em]"></p>
+          <pre id="folder-log" class="text-xs text-white font-thin whitespace-pre-wrap"></pre>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+
+    const uploadForm = document.getElementById('upload-form') as HTMLFormElement;
+    const uploadMsg = document.getElementById('upload-msg')!;
+    const authMsg = document.getElementById('auth-msg')!;
+    const logoutBtn = document.getElementById('logout-btn')!;
+    const addPasskeyBtn = document.getElementById('add-passkey-btn')!;
+    const visToggles = Array.from(document.querySelectorAll<HTMLButtonElement>('.vis-toggle'));
+    const visToggle = visToggles[0]!;
+    const signinBtn = document.getElementById('signin-btn') as HTMLButtonElement;
+    const randomBtn = document.getElementById('random-path-btn') as HTMLButtonElement;
+    const pathInput = document.getElementById('path-input') as HTMLInputElement;
+    const folderInput = document.getElementById('folder-input') as HTMLInputElement;
+    const folderBtn = document.getElementById('folder-btn') as HTMLButtonElement;
+    const folderMsg = document.getElementById('folder-msg')!;
+    const folderLog = document.getElementById('folder-log')!;
+
+    folderInput.setAttribute('webkitdirectory', '');
+    folderInput.setAttribute('directory', '');
+
+    folderBtn.addEventListener('click', () => folderInput.click());
+
+    folderInput.addEventListener('change', async () => {
+      const files = Array.from(folderInput.files ?? []);
+      if (!files.length) return;
+      const isPublic = visToggle.dataset.public === 'true';
+      if (!isPublic && !authed) {
+        await doSignIn();
+        if (!authed) { folderMsg.textContent = 'auth required for private upload'; return; }
+      }
+      folderLog.textContent = '';
+      let ok = 0;
+      let fail = 0;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const rel = (file as any).webkitRelativePath || file.name;
+        const path = rel.replace(/^\/+/, '');
+        folderMsg.textContent = `uploading ${i + 1}/${files.length} · ${path}`;
+        const form = new FormData();
+        form.append('path', path);
+        form.append('public', String(isPublic));
+        form.append('file', file);
+        try {
+          const res = await fetch('/api/upload', { method: 'POST', body: form });
+          if (res.ok) {
+            ok++;
+            folderLog.textContent += `· /${path}\n`;
+          } else {
+            fail++;
+            const err = await res.json().catch(() => ({}));
+            folderLog.textContent += `× /${path} — ${err.error ?? res.status}\n`;
+          }
+        } catch (e: any) {
+          fail++;
+          folderLog.textContent += `× /${path} — ${e?.message ?? 'error'}\n`;
+        }
+      }
+      folderMsg.textContent = `done · ${ok} ok · ${fail} failed`;
+      folderInput.value = '';
+      if (ok > 0 && fail === 0) {
+        const rootFolder = ((files[0] as any).webkitRelativePath || '').split('/')[0];
+        if (rootFolder) {
+          folderMsg.textContent += ` · opening /${rootFolder}/`;
+          setTimeout(() => { window.location.href = `/${rootFolder}/`; }, 700);
+        }
+      }
+    });
+
+    function randomPath(len = 16) {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      const arr = new Uint32Array(len);
+      crypto.getRandomValues(arr);
+      let s = '';
+      for (let i = 0; i < len; i++) s += chars[arr[i] % chars.length];
+      return s;
+    }
+
+    randomBtn.addEventListener('click', () => {
+      pathInput.value = randomPath();
+      pathInput.focus();
+    });
+
+    let authed = false;
+
+    function setPublicState(isPublic: boolean) {
+      visToggles.forEach((b) => {
+        b.dataset.public = String(isPublic);
+        b.textContent = isPublic ? 'public' : 'private';
+        b.style.color = isPublic ? '#22C55E' : '#EF4444';
+      });
+    }
+
+    function updateAuthUI() {
+      logoutBtn.classList.toggle('hidden', !authed);
+      addPasskeyBtn.classList.toggle('hidden', !authed);
+      signinBtn.classList.toggle('hidden', authed);
+    }
+
+    visToggles.forEach((b) =>
+      b.addEventListener('click', async () => {
+        const wantPublic = visToggle.dataset.public !== 'true';
+        if (!wantPublic && !authed) {
+          await doSignIn();
+          if (!authed) return;
+        }
+        setPublicState(wantPublic);
+      }),
+    );
+
+    signinBtn.addEventListener('click', () => doSignIn());
+
+    async function doRegister() {
+      authMsg.textContent = '';
+      try {
+        const optsRes = await fetch('/api/auth/passkey/register-start', { method: 'POST' });
+        if (!optsRes.ok) {
+          const err = await optsRes.json().catch(() => ({}));
+          authMsg.textContent = err.error ?? 'failed';
+          return false;
+        }
+        const opts = await optsRes.json();
+        const attestation = await startRegistration({ optionsJSON: opts });
+        const r = await fetch('/api/auth/passkey/register-finish', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(attestation),
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          authMsg.textContent = (err.error || 'verify failed') + (err.detail ? ': ' + err.detail : '');
+          return false;
+        }
+        return true;
+      } catch (e: any) {
+        authMsg.textContent = e?.name === 'NotAllowedError' ? 'cancelled' : (e?.message ?? 'failed');
+        return false;
+      }
+    }
+
+    async function doLogin() {
+      authMsg.textContent = '';
+      try {
+        const optsRes = await fetch('/api/auth/passkey/login-start', { method: 'POST' });
+        if (!optsRes.ok) return false;
+        const opts = await optsRes.json();
+        const assertion = await startAuthentication({ optionsJSON: opts });
+        const r = await fetch('/api/auth/passkey/login-finish', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(assertion),
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          authMsg.textContent = (err.error || 'verify failed') + (err.detail ? ': ' + err.detail : '');
+          return false;
+        }
+        return true;
+      } catch (e: any) {
+        authMsg.textContent = e?.name === 'NotAllowedError' ? 'cancelled' : (e?.message ?? 'failed');
+        return false;
+      }
+    }
+
+    async function doSignIn() {
+      const status = await fetch('/api/auth/passkey/status').then((r) => r.json());
+      const ok = status.hasCredentials ? await doLogin() : await doRegister();
+      if (ok) {
+        authed = true;
+        updateAuthUI();
+        authMsg.textContent = '';
+      }
+    }
+
+    async function init() {
+      const auth = await fetch('/api/auth/me').then((r) => r.json());
+      authed = !!auth.authed;
+      updateAuthUI();
+    }
+
+    addPasskeyBtn.addEventListener('click', async () => {
+      const ok = await doRegister();
+      if (ok) {
+        uploadMsg.textContent = 'passkey added';
+        setTimeout(() => (uploadMsg.textContent = ''), 2000);
+      }
+    });
+
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(uploadForm);
+      const isPublic = visToggle.dataset.public === 'true';
+      if (!isPublic && !authed) {
+        await doSignIn();
+        if (!authed) return;
+      }
+      const body = {
+        path: fd.get('path'),
+        format: fd.get('format'),
+        content: fd.get('content'),
+        public: isPublic,
+      };
+      uploadMsg.textContent = 'saving';
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          uploadMsg.textContent = data.error ?? 'failed';
+          return;
+        }
+        uploadMsg.innerHTML = `saved → <a href="${data.url}" class="underline">${data.url}</a>`;
+        uploadForm.reset();
+        setPublicState(true);
+      } catch {
+        uploadMsg.textContent = 'network error';
+      }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      authed = false;
+      updateAuthUI();
+      setPublicState(true);
+    });
+
+    init();
+  </script>
+</Layout>

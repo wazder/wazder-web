@@ -1,0 +1,57 @@
+---
+interface SeriesPoint { x: string; y: number }
+interface Series { name: string; points: SeriesPoint[]; stroke: string }
+
+interface Props {
+  series: Series[];
+  height?: number;
+  xLabels: string[];
+}
+const { series, height = 160, xLabels } = Astro.props;
+
+const allY = series.flatMap((s) => s.points.map((p) => p.y));
+const max = Math.max(1, ...allY);
+const n = xLabels.length;
+const innerHeight = height - 24;
+
+function pathFor(series: Series): string {
+  if (series.points.length === 0) return '';
+  const stepX = 100 / Math.max(1, n - 1);
+  const pts = series.points.map((p) => {
+    const i = xLabels.indexOf(p.x);
+    const x = i * stepX;
+    const y = innerHeight - (p.y / max) * (innerHeight - 4);
+    return `${x.toFixed(2)},${y.toFixed(2)}`;
+  });
+  return 'M ' + pts.join(' L ');
+}
+
+const isEmpty = allY.every((v) => v === 0);
+---
+
+<div class="relative">
+  <svg viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" class="block w-full" style={`height:${height}px`}>
+    {[0.25, 0.5, 0.75, 1].map((f) => (
+      <line x1="0" y1={innerHeight - innerHeight * f + (f === 1 ? 2 : 0)} x2="100" y2={innerHeight - innerHeight * f + (f === 1 ? 2 : 0)} stroke="rgba(255,255,255,0.05)" stroke-width="0.15" stroke-dasharray="0.4 0.8" />
+    ))}
+    <line x1="0" y1={innerHeight} x2="100" y2={innerHeight} stroke="rgba(255,255,255,0.15)" stroke-width="0.2" />
+    {series.map((s) => (
+      <path d={pathFor(s)} fill="none" stroke={s.stroke} stroke-width="0.6" stroke-linejoin="round" stroke-linecap="round" />
+    ))}
+    {xLabels.map((lab, i) => i % 2 === 0 && (
+      <text
+        x={i * (100 / Math.max(1, n - 1))}
+        y={height - 4}
+        font-size="3"
+        fill="rgba(255,255,255,0.35)"
+        text-anchor="middle"
+        font-family="ui-monospace, monospace"
+      >{lab}</text>
+    ))}
+  </svg>
+  {isEmpty && (
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <span class="text-[11px] font-mono font-thin text-white/30">no data yet</span>
+    </div>
+  )}
+</div>

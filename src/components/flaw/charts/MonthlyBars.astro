@@ -1,0 +1,83 @@
+---
+import type { MonthBucket } from '../../../lib/flaw/format';
+import { formatMoneyCompact, formatHours } from '../../../lib/flaw/format';
+import type { Currency } from '../../../lib/flaw/types';
+
+interface Props {
+  buckets: MonthBucket[];
+  metric: 'payment' | 'hours';
+  height?: number;
+  showAxis?: boolean;
+}
+const { buckets, metric, height = 120, showAxis = true } = Astro.props;
+
+const values = buckets.map((b) => (metric === 'payment' ? b.total : b.hours));
+const max = Math.max(1, ...values);
+const n = buckets.length;
+
+const paddingX = 8;
+const innerHeight = height - 28;
+const labelY = height - 6;
+
+const barW = 100 / n;
+const isEmpty = values.every((v) => v === 0);
+
+const peakIdx = values.indexOf(Math.max(...values));
+const peakLabel = isEmpty
+  ? null
+  : metric === 'payment'
+    ? formatMoneyCompact(values[peakIdx], dominantCurrency(buckets[peakIdx].perCurrency))
+    : formatHours(values[peakIdx]);
+
+function dominantCurrency(per: Record<Currency, number>): Currency {
+  let max = -1; let cur: Currency = 'TRY';
+  for (const c of ['TRY', 'USD', 'EUR'] as Currency[]) {
+    if (per[c] > max) { max = per[c]; cur = c; }
+  }
+  return cur;
+}
+---
+
+<div class="relative">
+  <svg viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" class="block w-full" style={`height:${height}px`}>
+    {/* baseline */}
+    <line x1="0" y1={innerHeight} x2="100" y2={innerHeight} stroke="rgba(255,255,255,0.1)" stroke-width="0.2" />
+    {/* gridlines */}
+    {[0.25, 0.5, 0.75].map((f) => (
+      <line x1="0" y1={innerHeight - innerHeight * f} x2="100" y2={innerHeight - innerHeight * f} stroke="rgba(255,255,255,0.05)" stroke-width="0.15" stroke-dasharray="0.4 0.6" />
+    ))}
+    {buckets.map((b, i) => {
+      const v = values[i];
+      const h = max === 0 ? 0 : (v / max) * innerHeight;
+      const x = i * barW + barW * 0.15;
+      const w = barW * 0.7;
+      const y = innerHeight - h;
+      const isPeak = i === peakIdx && !isEmpty && v > 0;
+      return (
+        <>
+          <rect x={x} y={y} width={w} height={h} fill={isPeak ? '#ffffff' : 'rgba(255,255,255,0.55)'} />
+          {showAxis && i % 2 === 0 && (
+            <text
+              x={i * barW + barW / 2}
+              y={labelY}
+              font-size="3"
+              fill="rgba(255,255,255,0.35)"
+              text-anchor="middle"
+              font-family="ui-monospace, monospace"
+            >{b.label}</text>
+          )}
+        </>
+      );
+    })}
+  </svg>
+  {isEmpty && (
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <span class="text-[11px] font-mono font-thin text-white/30">no data</span>
+    </div>
+  )}
+  {peakLabel && !isEmpty && (
+    <div class="absolute top-0 right-0 text-[10px] font-mono font-thin text-white/50 tabular-nums">
+      peak · {peakLabel}
+    </div>
+  )}
+</div>

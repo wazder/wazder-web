@@ -1,1 +1,22 @@
 @import "tailwindcss";
+
+.arrow {
+  display: inline-block;
+  transition: transform 180ms ease-out;
+}
+a:hover .arrow-up-right,
+button:hover .arrow-up-right {
+  transform: translate(2px, -2px);
+}
+a:hover .arrow-down,
+button:hover .arrow-down {
+  transform: translateY(2px);
+}
+a:hover .arrow-right,
+button:hover .arrow-right {
+  transform: translateX(3px);
+}
+a:hover .arrow-left,
+button:hover .arrow-left {
+  transform: translateX(-3px);
+}

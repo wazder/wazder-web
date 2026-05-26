@@ -1,0 +1,262 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="hub — wazder">
+  <main class="min-h-screen px-6 py-10 font-mono text-sm text-white">
+    <div class="max-w-2xl mx-auto">
+      <nav class="flex justify-end mb-6 text-xs">
+        <button id="auth-action" class="font-thin hover:underline underline-offset-4 hidden"></button>
+      </nav>
+
+      <div id="hub-list" class="space-y-1"></div>
+
+      <div id="user-section" class="mt-8 hidden">
+        <div class="flex items-baseline gap-2 mb-3">
+          <span class="text-white font-thin select-none">/</span>
+          <input
+            id="user-search"
+            type="text"
+            placeholder="search"
+            autocomplete="off"
+            class="flex-1 bg-transparent border-0 border-b border-white outline-none text-white font-mono text-sm pb-1 caret-white placeholder:text-white/40"
+          />
+          <button
+            id="search-clear"
+            type="button"
+            class="text-xs font-thin hover:underline underline-offset-4 hidden"
+          >
+            clear
+          </button>
+        </div>
+        <div id="user-list" class="space-y-1"></div>
+        <p id="search-empty" class="text-xs text-white font-thin hidden">no match</p>
+      </div>
+
+      <div id="hub-footer" class="mt-12 text-xs text-white font-thin"></div>
+
+      <p id="auth-msg" class="text-xs text-white font-thin mt-3"></p>
+    </div>
+  </main>
+
+  <div
+    id="qr-modal"
+    class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center px-6"
+  >
+    <div class="border border-white bg-black p-6 flex flex-col items-center gap-4 max-w-sm w-full">
+      <canvas id="qr-canvas" class="bg-black"></canvas>
+      <p id="qr-url" class="text-xs font-thin text-white break-all text-center"></p>
+      <button
+        id="qr-close"
+        type="button"
+        class="text-xs font-thin hover:underline underline-offset-4"
+      >
+        close
+      </button>
+    </div>
+  </div>
+
+  <script>
+    import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+    import QRCode from 'qrcode';
+
+    const list = document.getElementById('hub-list')!;
+    const userSection = document.getElementById('user-section')!;
+    const userList = document.getElementById('user-list')!;
+    const userSearch = document.getElementById('user-search') as HTMLInputElement;
+    const searchClear = document.getElementById('search-clear') as HTMLButtonElement;
+    const searchEmpty = document.getElementById('search-empty')!;
+    const footer = document.getElementById('hub-footer')!;
+    const authAction = document.getElementById('auth-action') as HTMLButtonElement;
+    const authMsg = document.getElementById('auth-msg')!;
+    const qrModal = document.getElementById('qr-modal')!;
+    const qrCanvas = document.getElementById('qr-canvas') as HTMLCanvasElement;
+    const qrUrl = document.getElementById('qr-url')!;
+    const qrClose = document.getElementById('qr-close')!;
+
+    let userItems: any[] = [];
+
+    let authed = false;
+
+    function fmtSize(n?: number) {
+      if (n == null) return '';
+      if (n < 1024) return n + 'b';
+      if (n < 1024 * 1024) return (n / 1024).toFixed(1) + 'k';
+      return (n / 1024 / 1024).toFixed(1) + 'm';
+    }
+
+    function typeLabel(item: any) {
+      return item.format ?? item.kind ?? '';
+    }
+
+    function truncatePath(p: string, maxLen = 28) {
+      if (p.length <= maxLen) return p;
+      const tail = 4;
+      const head = Math.max(1, maxLen - tail - 1);
+      return p.slice(0, head) + '…' + p.slice(-tail);
+    }
+
+    function rowHtml(item: any) {
+      const marker = item.public
+        ? '<span class="italic font-thin" style="color:#22C55E;">public</span>'
+        : '<span class="italic font-thin" style="color:#EF4444;">locked</span>';
+      const meta = item.static
+        ? [typeLabel(item), fmtSize(item.size)].filter(Boolean).join(' ')
+        : fmtSize(item.size);
+      const isUpload = item.path === 'upload';
+      const pathStyle = isUpload ? 'style="color: #22C55E; font-weight: 700;"' : '';
+      const pathClass = isUpload ? '' : 'text-white';
+      const isMobile = window.innerWidth < 640;
+      const maxLen = isMobile ? 20 : item.static ? 40 : 30;
+      const display = truncatePath('/' + item.path, maxLen + 1);
+      return `<div data-path="${item.path}" class="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] gap-4 items-baseline py-1 -mx-2 px-2 rounded transition-colors">
+        <a href="/${item.path}" title="/${item.path}" class="${pathClass} hover:underline underline-offset-4 truncate" ${pathStyle}>${display}</a>
+        <span class="text-white text-xs font-thin">${meta}</span>
+        <button class="qr-btn text-white text-xs font-thin hover:underline underline-offset-4" type="button" aria-label="show qr">qr</button>
+        <span class="text-xs">${marker}</span>
+      </div>`;
+    }
+
+    function attachQR(container: HTMLElement) {
+      container.querySelectorAll('.qr-btn').forEach((b) =>
+        b.addEventListener('click', (e) => {
+          const row = (e.target as HTMLElement).closest('[data-path]') as HTMLElement;
+          showQR(row.dataset.path!);
+        }),
+      );
+    }
+
+    function renderUserSection() {
+      const q = userSearch.value.toLowerCase().trim();
+      const filtered = q ? userItems.filter((i) => i.path.toLowerCase().includes(q)) : userItems;
+      userList.innerHTML = filtered.map(rowHtml).join('');
+      attachQR(userList);
+      searchEmpty.classList.toggle('hidden', filtered.length > 0 || !q);
+      searchClear.classList.toggle('hidden', q.length === 0);
+    }
+
+    async function load() {
+      const res = await fetch('/api/hub');
+      const data = await res.json();
+      authed = !!data.authed;
+      const group1 = data.items.filter((i: any) => i.static && i.group === 1);
+      const group2 = data.items.filter((i: any) => i.static && i.group === 2);
+      userItems = data.items.filter((i: any) => !i.static);
+
+      let html = group1.map(rowHtml).join('');
+      if (group2.length) {
+        html += `<div class="mt-8 space-y-1">${group2.map(rowHtml).join('')}</div>`;
+      }
+      list.innerHTML = html;
+      attachQR(list);
+
+      userSection.classList.toggle('hidden', userItems.length === 0);
+      renderUserSection();
+
+      footer.textContent = authed ? `${data.items.length} items · authed` : `${data.items.length} items`;
+      updateAuthUI();
+    }
+
+    userSearch.addEventListener('input', renderUserSection);
+    searchClear.addEventListener('click', () => {
+      userSearch.value = '';
+      renderUserSection();
+      userSearch.focus();
+    });
+
+    async function showQR(path: string) {
+      const url = `${location.origin}/${path}`;
+      qrUrl.textContent = url;
+      await QRCode.toCanvas(qrCanvas, url, {
+        width: 256,
+        margin: 1,
+        color: { dark: '#ffffff', light: '#000000' },
+        errorCorrectionLevel: 'M',
+      });
+      qrModal.classList.remove('hidden');
+    }
+
+    function hideQR() {
+      qrModal.classList.add('hidden');
+    }
+
+    qrClose.addEventListener('click', hideQR);
+    qrModal.addEventListener('click', (e) => {
+      if (e.target === qrModal) hideQR();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !qrModal.classList.contains('hidden')) hideQR();
+    });
+
+    function updateAuthUI() {
+      authAction.classList.remove('hidden');
+      authAction.textContent = authed ? 'logout' : 'login';
+    }
+
+    async function doRegister() {
+      authMsg.textContent = '';
+      try {
+        const r = await fetch('/api/auth/passkey/register-start', { method: 'POST' });
+        if (!r.ok) { authMsg.textContent = 'failed'; return false; }
+        const opts = await r.json();
+        const att = await startRegistration({ optionsJSON: opts });
+        const f = await fetch('/api/auth/passkey/register-finish', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(att),
+        });
+        if (!f.ok) {
+          const err = await f.json().catch(() => ({}));
+          authMsg.textContent = (err.error || 'verify failed') + (err.detail ? ': ' + err.detail : '');
+          return false;
+        }
+        return true;
+      } catch (e: any) {
+        authMsg.textContent = e?.name === 'NotAllowedError' ? 'cancelled' : (e?.message ?? 'failed');
+        return false;
+      }
+    }
+
+    async function doLogin() {
+      authMsg.textContent = '';
+      try {
+        const r = await fetch('/api/auth/passkey/login-start', { method: 'POST' });
+        if (!r.ok) { authMsg.textContent = 'no passkey'; return false; }
+        const opts = await r.json();
+        const ass = await startAuthentication({ optionsJSON: opts });
+        const f = await fetch('/api/auth/passkey/login-finish', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(ass),
+        });
+        if (!f.ok) {
+          const err = await f.json().catch(() => ({}));
+          authMsg.textContent = (err.error || 'verify failed') + (err.detail ? ': ' + err.detail : '');
+          return false;
+        }
+        return true;
+      } catch (e: any) {
+        authMsg.textContent = e?.name === 'NotAllowedError' ? 'cancelled' : (e?.message ?? 'failed');
+        return false;
+      }
+    }
+
+    authAction.addEventListener('click', async () => {
+      if (authed) {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        authed = false;
+        authMsg.textContent = '';
+        await load();
+        return;
+      }
+      const status = await fetch('/api/auth/passkey/status').then((r) => r.json());
+      const ok = status.hasCredentials ? await doLogin() : await doRegister();
+      if (ok) {
+        authed = true;
+        await load();
+      }
+    });
+
+    load();
+  </script>
+</Layout>

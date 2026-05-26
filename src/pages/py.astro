@@ -1,0 +1,223 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="py — wazder">
+  <main class="min-h-screen px-6 py-10 font-mono text-sm text-white">
+    <div class="max-w-3xl mx-auto">
+      <p id="status" class="text-xs font-thin mb-4">loading pyodide…</p>
+
+      <div id="editor" class="border border-white rounded"></div>
+
+      <div class="flex items-center justify-between text-xs mt-3">
+        <span class="text-white font-thin">tab to accept · cmd+enter to run</span>
+        <button
+          type="button"
+          id="run-btn"
+          disabled
+          class="text-white border border-white hover:bg-white/[0.05] hover:underline underline-offset-4 disabled:opacity-40 disabled:cursor-not-allowed disabled:no-underline px-3 py-1 rounded transition-colors"
+        >
+          run
+        </button>
+      </div>
+
+      <pre id="output" class="mt-8 whitespace-pre-wrap break-words text-white text-sm leading-relaxed"></pre>
+    </div>
+  </main>
+
+  <script>
+    import { EditorState, StateEffect, StateField } from '@codemirror/state';
+    import { EditorView, keymap, lineNumbers, WidgetType, Decoration, type DecorationSet } from '@codemirror/view';
+    import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
+    import { python } from '@codemirror/lang-python';
+    import { bracketMatching, indentOnInput } from '@codemirror/language';
+
+    const statusEl = document.getElementById('status')!;
+    const editorParent = document.getElementById('editor')!;
+    const outputEl = document.getElementById('output')!;
+    const runBtn = document.getElementById('run-btn') as HTMLButtonElement;
+
+    let pyodide: any = null;
+
+    // ---- Inline ghost text suggestion ----
+    const setSuggestion = StateEffect.define<{ text: string; pos: number }>();
+    const clearSuggestion = StateEffect.define<null>();
+
+    class SuggestionWidget extends WidgetType {
+      constructor(readonly text: string) { super(); }
+      toDOM() {
+        const span = document.createElement('span');
+        span.style.opacity = '0.4';
+        span.style.color = '#fff';
+        span.style.pointerEvents = 'none';
+        span.textContent = this.text;
+        return span;
+      }
+      eq(other: SuggestionWidget) { return other.text === this.text; }
+    }
+
+    interface SuggestionState { text: string; pos: number }
+
+    const suggestionField = StateField.define<SuggestionState>({
+      create() { return { text: '', pos: 0 }; },
+      update(state, tr) {
+        let next = state;
+        for (const e of tr.effects) {
+          if (e.is(setSuggestion)) next = e.value;
+          if (e.is(clearSuggestion)) next = { text: '', pos: 0 };
+        }
+        if (tr.docChanged) {
+          if (next === state) next = { text: '', pos: 0 };
+        }
+        if (tr.selection && next.text && tr.state.selection.main.head !== next.pos) {
+          next = { text: '', pos: 0 };
+        }
+        return next;
+      },
+      provide: (f) =>
+        EditorView.decorations.from(f, (s) => {
+          if (!s.text) return Decoration.none;
+          return Decoration.set([
+            Decoration.widget({ widget: new SuggestionWidget(s.text), side: 1 }).range(s.pos),
+          ]);
+        }),
+    });
+
+    function acceptSuggestion(view: EditorView): boolean {
+      const s = view.state.field(suggestionField);
+      if (!s.text) return false;
+      view.dispatch({
+        changes: { from: s.pos, insert: s.text },
+        effects: clearSuggestion.of(null),
+        selection: { anchor: s.pos + s.text.length },
+      });
+      return true;
+    }
+
+    function dismissSuggestion(view: EditorView): boolean {
+      const s = view.state.field(suggestionField);
+      if (!s.text) return false;
+      view.dispatch({ effects: clearSuggestion.of(null) });
+      return true;
+    }
+
+    let fetchTimer: number | null = null;
+    let lastReq = 0;
+    async function requestSuggestion(view: EditorView) {
+      const myReq = ++lastReq;
+      const prefix = view.state.doc.sliceString(0, view.state.selection.main.head);
+      if (!prefix.trim()) return;
+      try {
+        const res = await fetch('/api/complete', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ prefix }),
+        });
+        if (!res.ok || myReq !== lastReq) return;
+        const data = await res.json();
+        const text = (data.completion ?? '').trim();
+        if (!text || myReq !== lastReq) return;
+        const pos = view.state.selection.main.head;
+        view.dispatch({ effects: setSuggestion.of({ text, pos }) });
+      } catch {}
+    }
+
+    const suggestionPlugin = EditorView.updateListener.of((update) => {
+      if (update.docChanged || (update.selectionSet && !update.docChanged)) {
+        if (fetchTimer) window.clearTimeout(fetchTimer);
+        fetchTimer = window.setTimeout(() => requestSuggestion(update.view), 600);
+      }
+    });
+
+    // ---- Theme ----
+    const theme = EditorView.theme(
+      {
+        '&': { background: 'transparent', color: '#fff' },
+        '.cm-content': {
+          caretColor: '#fff',
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+          fontSize: '13px',
+          padding: '12px',
+        },
+        '.cm-focused': { outline: 'none' },
+        '.cm-cursor, .cm-dropCursor': { borderLeftColor: '#fff' },
+        '.cm-gutters': { background: 'transparent', borderRight: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)' },
+        '.cm-activeLine, .cm-activeLineGutter': { background: 'transparent' },
+        '.cm-line': { lineHeight: '1.6' },
+        '.cm-selectionBackground, ::selection': { background: 'rgba(255,255,255,0.15) !important' },
+        '.cm-scroller': { fontFamily: 'inherit', overflow: 'auto', minHeight: '200px' },
+      },
+      { dark: true },
+    );
+
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: '',
+        extensions: [
+          history(),
+          lineNumbers(),
+          bracketMatching(),
+          indentOnInput(),
+          python(),
+          theme,
+          suggestionField,
+          suggestionPlugin,
+          keymap.of([
+            { key: 'Tab', run: acceptSuggestion },
+            { key: 'Escape', run: dismissSuggestion },
+            { key: 'Mod-Enter', run: () => { run(); return true; } },
+            indentWithTab,
+            ...defaultKeymap,
+            ...historyKeymap,
+          ]),
+        ],
+      }),
+      parent: editorParent,
+    });
+    view.focus();
+
+    // ---- Pyodide ----
+    function appendOutput(s: string) { outputEl.textContent += s; }
+
+    async function run() {
+      if (!pyodide) return;
+      outputEl.textContent = '';
+      runBtn.disabled = true;
+      const code = view.state.doc.toString();
+      try {
+        const result = await pyodide.runPythonAsync(code);
+        if (result !== undefined && result !== null) appendOutput(String(result));
+      } catch (e) {
+        appendOutput(String(e));
+      }
+      runBtn.disabled = false;
+    }
+
+    runBtn.addEventListener('click', run);
+
+    (async () => {
+      try {
+        // @ts-ignore
+        await loadScript('https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js');
+        // @ts-ignore
+        pyodide = await loadPyodide();
+        pyodide.setStdout({ batched: (s: string) => appendOutput(s + '\n') });
+        pyodide.setStderr({ batched: (s: string) => appendOutput(s + '\n') });
+        statusEl.textContent = 'ready · python ' + pyodide.version;
+        runBtn.disabled = false;
+      } catch (e) {
+        statusEl.textContent = 'failed to load pyodide';
+      }
+    })();
+
+    function loadScript(src: string): Promise<void> {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('load failed'));
+        document.head.appendChild(s);
+      });
+    }
+  </script>
+</Layout>

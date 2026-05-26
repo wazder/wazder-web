@@ -1,0 +1,87 @@
+---
+import type { Project, Currency } from '../../lib/flaw/types';
+import {
+  sumPaymentsByCurrency,
+  sumHours,
+  lastActivity,
+  formatMoneyCompact,
+  formatHours,
+  formatDate,
+  bucketByMonth,
+} from '../../lib/flaw/format';
+import StatusMarker from './StatusMarker.astro';
+import Sparkline from './charts/Sparkline.astro';
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+
+const byCurrency = sumPaymentsByCurrency(project.payments);
+const totalHours = sumHours(project.timeEntries);
+const updated = lastActivity(project);
+const buckets = bucketByMonth(project, 12);
+
+const payLine = (Object.entries(byCurrency) as [Currency, number][])
+  .filter(([, v]) => v > 0)
+  .map(([cur, amt]) => formatMoneyCompact(amt, cur))
+  .join(' · ') || '—';
+
+const totalPaymentForSort = byCurrency.TRY + byCurrency.USD * 35 + byCurrency.EUR * 38;
+const searchBlob = [project.name, project.description, project.category ?? '', ...project.techStack].join(' ');
+
+const sparkValues = buckets.map((b) => b.total);
+const tasksDone = project.tasks.filter((t) => t.status === 'done').length;
+const tasksTotal = project.tasks.length;
+---
+
+<a
+  href={`/flaw/${project.id}`}
+  class="card group block border-t border-white/10 hover:bg-white/[0.02] transition-colors"
+  data-status={project.status}
+  data-name={project.name}
+  data-payment={totalPaymentForSort}
+  data-hours={totalHours}
+  data-updated={updated ?? project.startDate}
+  data-search={searchBlob}
+>
+  <div class="px-5 py-5 grid grid-cols-12 gap-4 items-center">
+    <div class="col-span-12 md:col-span-5 min-w-0">
+      <div class="flex items-baseline gap-3">
+        <span class="text-white/30 font-mono font-thin text-xs select-none">/</span>
+        <h3 class="text-base font-light tracking-tight text-white truncate group-hover:underline underline-offset-4 decoration-white/40">
+          {project.name}
+        </h3>
+      </div>
+      <div class="mt-1 flex items-baseline gap-3 text-[11px] font-mono font-thin">
+        <StatusMarker status={project.status} />
+        {project.category && <span class="text-white/40 lowercase">{project.category}</span>}
+        <span class="text-white/30">·</span>
+        <span class="text-white/40 truncate">{project.description}</span>
+      </div>
+    </div>
+
+    <div class="col-span-4 md:col-span-2">
+      <div class="text-[9px] font-mono font-thin uppercase tracking-[0.2em] text-white/30">earned</div>
+      <div class="mt-1 text-sm font-light tabular-nums">{payLine}</div>
+    </div>
+
+    <div class="col-span-4 md:col-span-2">
+      <div class="text-[9px] font-mono font-thin uppercase tracking-[0.2em] text-white/30">hours · tasks</div>
+      <div class="mt-1 text-sm font-light tabular-nums">
+        {totalHours > 0 ? formatHours(totalHours) : '—'}
+        <span class="text-white/30 mx-1">·</span>
+        {tasksTotal > 0 ? `${tasksDone}/${tasksTotal}` : '—'}
+      </div>
+    </div>
+
+    <div class="col-span-4 md:col-span-2">
+      <div class="text-[9px] font-mono font-thin uppercase tracking-[0.2em] text-white/30">12 mo</div>
+      <div class="mt-1"><Sparkline values={sparkValues} width={140} height={26} /></div>
+    </div>
+
+    <div class="hidden md:flex md:col-span-1 justify-end">
+      <span class="text-[11px] font-mono font-thin text-white/40 tabular-nums">{formatDate(updated)}</span>
+    </div>
+  </div>
+</a>

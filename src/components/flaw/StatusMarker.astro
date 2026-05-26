@@ -1,0 +1,17 @@
+---
+import type { ProjectStatus } from '../../lib/flaw/types';
+import { statusLabel, statusColor } from '../../lib/flaw/format';
+
+interface Props {
+  status: ProjectStatus;
+  size?: 'sm' | 'md';
+}
+const { status, size = 'sm' } = Astro.props;
+const color = statusColor(status);
+const text = size === 'sm' ? 'text-[11px]' : 'text-xs';
+---
+
+<span class={`inline-flex items-center gap-1.5 font-mono font-thin ${text}`}>
+  <span class="inline-block size-1.5 rounded-full" style={`background:${color}`}></span>
+  <span class="italic" style={`color:${color}`}>{statusLabel(status)}</span>
+</span>

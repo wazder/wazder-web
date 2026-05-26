@@ -22,29 +22,29 @@ const education = [
 
 <section id="about" class="py-32 px-6">
   <div class="mx-auto max-w-3xl">
-    <h2 class="text-sm uppercase tracking-[0.3em] text-white/40 mb-10">About</h2>
+    <h2 class="text-sm uppercase tracking-[0.3em] text-white mb-10">About</h2>
 
     <div class="grid md:grid-cols-3 gap-12">
       <div class="md:col-span-1">
-        <h3 class="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">Education</h3>
+        <h3 class="text-xs uppercase tracking-[0.2em] text-white mb-4">Education</h3>
         <ul class="space-y-5">
           {education.map((e) => (
             <li>
               <div class="text-sm font-light">{e.school}</div>
-              <div class="text-xs text-white/50 mt-1">{e.degree}</div>
-              <div class="text-xs text-white/30 mt-1">{e.period}</div>
+              <div class="text-xs text-white mt-1">{e.degree}</div>
+              <div class="text-xs text-white mt-1">{e.period}</div>
             </li>
           ))}
         </ul>
       </div>
 
       <div class="md:col-span-2">
-        <h3 class="text-xs uppercase tracking-[0.2em] text-white/40 mb-4">Skills</h3>
+        <h3 class="text-xs uppercase tracking-[0.2em] text-white mb-4">Skills</h3>
         <dl class="space-y-5 sm:space-y-4">
           {skills.map((s) => (
             <div class="flex flex-col sm:grid sm:grid-cols-[120px_1fr] gap-1 sm:gap-4 sm:items-baseline">
-              <dt class="text-xs uppercase tracking-wider text-white/40">{s.group}</dt>
-              <dd class="text-sm text-white/70">{s.items.join(' · ')}</dd>
+              <dt class="text-xs uppercase tracking-wider text-white">{s.group}</dt>
+              <dd class="text-sm text-white">{s.items.join(' · ')}</dd>
             </div>
           ))}
         </dl>

@@ -9,15 +9,15 @@ const profiles = [
 
 <section id="contact" class="py-32 px-6">
   <div class="mx-auto max-w-3xl">
-    <h2 class="text-sm uppercase tracking-[0.3em] text-white/40 mb-10">Contact</h2>
+    <h2 class="text-sm uppercase tracking-[0.3em] text-white mb-10">Contact</h2>
 
-    <p class="text-base text-white/60 max-w-xl leading-relaxed mb-10">
+    <p class="text-base text-white max-w-xl leading-relaxed mb-10">
       Open to AI/ML, full-stack, and product engagements. Easiest to reach by email.
     </p>
 
     <a
       href={`mailto:${primaryEmail}`}
-      class="inline-block text-xl sm:text-2xl md:text-3xl font-light hover:text-white text-white/80 transition-colors break-all"
+      class="inline-block text-xl sm:text-2xl md:text-3xl font-light hover:text-white text-white transition-colors break-all"
     >
       {primaryEmail}
     </a>
@@ -26,14 +26,14 @@ const profiles = [
       <ul class="space-y-3">
         {profiles.map((p) => (
           <li class="grid grid-cols-[80px_1fr] gap-4 items-baseline">
-            <span class="text-xs uppercase tracking-[0.2em] text-white/40">{p.label}</span>
+            <span class="text-xs uppercase tracking-[0.2em] text-white">{p.label}</span>
             <a
               href={p.href}
               target="_blank"
               rel="noreferrer"
-              class="text-sm text-white/70 hover:text-white transition-colors"
+              class="text-sm text-white hover:underline underline-offset-4 transition-colors"
             >
-              {p.handle} ↗
+              {p.handle} <span class="arrow arrow-up-right">↗</span>
             </a>
           </li>
         ))}
@@ -41,24 +41,24 @@ const profiles = [
 
       <ul class="space-y-3">
         <li class="grid grid-cols-[80px_1fr] gap-4 items-baseline">
-          <span class="text-xs uppercase tracking-[0.2em] text-white/40">CLL</span>
+          <span class="text-xs uppercase tracking-[0.2em] text-white">CLL</span>
           <a
             href="https://camellayer.com"
             target="_blank"
             rel="noreferrer"
-            class="text-sm text-white/70 hover:text-white transition-colors"
+            class="text-sm text-white hover:underline underline-offset-4 transition-colors"
           >
-            camellayer.com ↗
+            camellayer.com <span class="arrow arrow-up-right">↗</span>
           </a>
         </li>
         <li class="grid grid-cols-[80px_1fr] gap-4 items-baseline">
-          <span class="text-xs uppercase tracking-[0.2em] text-white/40">CV</span>
+          <span class="text-xs uppercase tracking-[0.2em] text-white">CV</span>
           <a
             href="/hasan-tatar-cv.pdf"
             download
-            class="text-sm text-white/70 hover:text-white transition-colors"
+            class="text-sm text-white hover:underline underline-offset-4 transition-colors"
           >
-            Download ↓
+            Download <span class="arrow arrow-down">↓</span>
           </a>
         </li>
       </ul>

@@ -1,0 +1,70 @@
+---
+import type { Project, Currency } from '../../lib/flaw/types';
+import { sumPaymentsByCurrency, sumHours, formatMoney, formatHours } from '../../lib/flaw/format';
+
+interface Props {
+  projects: Project[];
+}
+const { projects } = Astro.props;
+
+const counts = {
+  active:    projects.filter((p) => p.status === 'active').length,
+  paused:    projects.filter((p) => p.status === 'paused').length,
+  completed: projects.filter((p) => p.status === 'completed').length,
+  archived:  projects.filter((p) => p.status === 'archived').length,
+};
+
+const totalByCurrency: Record<Currency, number> = { TRY: 0, USD: 0, EUR: 0 };
+let totalHours = 0;
+let totalPayments = 0;
+let totalTasksDone = 0;
+let totalTasks = 0;
+for (const p of projects) {
+  const t = sumPaymentsByCurrency(p.payments);
+  totalByCurrency.TRY += t.TRY;
+  totalByCurrency.USD += t.USD;
+  totalByCurrency.EUR += t.EUR;
+  totalHours += sumHours(p.timeEntries);
+  totalPayments += p.payments.length;
+  totalTasks += p.tasks.length;
+  totalTasksDone += p.tasks.filter((t) => t.status === 'done').length;
+}
+
+const currencyEntries = (Object.entries(totalByCurrency) as [Currency, number][])
+  .filter(([, v]) => v > 0);
+
+function cell(label: string, value: string, sub?: string) {
+  return { label, value, sub };
+}
+const cells = [
+  cell('projects',  String(projects.length), `${counts.active} active · ${counts.paused} paused`),
+  cell('hours',     totalHours > 0 ? formatHours(totalHours) : '—', `${totalPayments} payments logged`),
+  cell('tasks',     `${totalTasksDone} / ${totalTasks || '—'}`, totalTasks > 0 ? `${Math.round((totalTasksDone / totalTasks) * 100)}% complete` : 'no tasks'),
+];
+---
+
+<section class="border-t border-white/10">
+  <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/10">
+    {cells.map((c) => (
+      <div class="px-5 py-5">
+        <div class="text-[10px] font-mono font-thin uppercase tracking-[0.2em] text-white/40">{c.label}</div>
+        <div class="mt-2 text-2xl font-light tracking-tight tabular-nums">{c.value}</div>
+        {c.sub && <div class="mt-1 text-[11px] font-mono font-thin text-white/40">{c.sub}</div>}
+      </div>
+    ))}
+    <div class="px-5 py-5">
+      <div class="text-[10px] font-mono font-thin uppercase tracking-[0.2em] text-white/40">earned</div>
+      {currencyEntries.length === 0 ? (
+        <div class="mt-2 text-2xl font-light text-white/30 tabular-nums">—</div>
+      ) : (
+        <div class="mt-2 space-y-0.5">
+          {currencyEntries.map(([cur, amt]) => (
+            <div class="text-lg font-light tracking-tight tabular-nums">{formatMoney(amt, cur)}</div>
+          ))}
+        </div>
+      )}
+      <div class="mt-1 text-[11px] font-mono font-thin text-white/40">no fx conversion</div>
+    </div>
+  </div>
+  <div class="border-t border-white/10"></div>
+</section>
