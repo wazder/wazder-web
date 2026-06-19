@@ -1,0 +1,168 @@
+---
+import Layout from '../../layouts/Layout.astro';
+// Static shell — live data is fetched client-side from /flaw/access-data (a
+// passkey-gated Pages Function that proxies flaw.wazder.com's admin API with the
+// server-held bearer token). This page is itself gated by functions/flaw/_middleware.ts.
+---
+
+<Layout title="flaw — access" description="Who reached flaw.wazder.com behind the shared password.">
+  <main class="min-h-screen font-mono text-white">
+    <div class="max-w-6xl mx-auto px-5 md:px-8 py-10">
+
+      <header class="flex items-baseline justify-between">
+        <div class="flex items-baseline gap-3">
+          <a href="/" class="text-white/40 hover:text-white text-xs font-thin">wazder</a>
+          <span class="text-white/20">/</span>
+          <a href="/flaw" class="text-white/40 hover:text-white text-xs font-thin">flaw</a>
+          <span class="text-white/20">/</span>
+          <span class="text-white text-xs">access</span>
+        </div>
+        <div class="flex items-baseline gap-4 text-[11px] font-thin text-white/40">
+          <a href="/flaw" class="hover:text-white hover:underline underline-offset-4">projects</a>
+          <span class="text-white/20">·</span>
+          <a href="/hub" class="hover:text-white hover:underline underline-offset-4">hub</a>
+          <span class="text-white/20">·</span>
+          <button id="logout" class="hover:text-white hover:underline underline-offset-4">logout</button>
+        </div>
+      </header>
+
+      <section class="mt-12">
+        <h1 class="font-sans font-light tracking-tight text-4xl md:text-5xl">access log</h1>
+        <p class="mt-3 text-sm font-thin text-white/50 max-w-xl">
+          flaw.wazder.com'a paylaşılan şifreyle kim, ne zaman, nereden girmiş — başarılı ve başarısız denemeler.
+        </p>
+      </section>
+
+      <section class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/10 border border-white/10">
+        <div class="bg-black p-4">
+          <div class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">girişler</div>
+          <div id="stat-granted" class="mt-2 text-2xl font-sans font-light tabular-nums">—</div>
+        </div>
+        <div class="bg-black p-4">
+          <div class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">başarısız</div>
+          <div id="stat-denied" class="mt-2 text-2xl font-sans font-light tabular-nums">—</div>
+        </div>
+        <div class="bg-black p-4">
+          <div class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">tekil IP</div>
+          <div id="stat-ips" class="mt-2 text-2xl font-sans font-light tabular-nums">—</div>
+        </div>
+        <div class="bg-black p-4">
+          <div class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">son giriş</div>
+          <div id="stat-last" class="mt-2 text-sm font-thin text-white/70">—</div>
+        </div>
+      </section>
+
+      <section class="mt-12">
+        <div class="flex items-baseline justify-between border-b border-white/10 pb-3 mb-3">
+          <h2 class="text-[10px] font-thin uppercase tracking-[0.2em] text-white/40">son denemeler · <span id="row-count">0</span></h2>
+          <button id="refresh" class="text-[10px] font-thin text-white/40 hover:text-white hover:underline underline-offset-4">yenile</button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-[12px] font-thin border-collapse">
+            <thead>
+              <tr class="text-white/40 text-left">
+                <th class="py-2 pr-4 font-thin uppercase tracking-[0.15em] text-[10px]">zaman</th>
+                <th class="py-2 pr-4 font-thin uppercase tracking-[0.15em] text-[10px]">sonuç</th>
+                <th class="py-2 pr-4 font-thin uppercase tracking-[0.15em] text-[10px]">IP</th>
+                <th class="py-2 pr-4 font-thin uppercase tracking-[0.15em] text-[10px]">ülke</th>
+                <th class="py-2 pr-4 font-thin uppercase tracking-[0.15em] text-[10px]">cihaz</th>
+                <th class="py-2 pr-4 font-thin uppercase tracking-[0.15em] text-[10px]">yöntem</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <p id="empty" class="text-xs font-thin text-white/40 mt-5" style="display:none">Henüz kayıt yok.</p>
+        <p id="error" class="text-xs font-thin text-red-400/80 mt-5" style="display:none"></p>
+      </section>
+
+      <footer class="mt-16 pt-6 border-t border-white/10 text-[10px] font-thin text-white/30">
+        kaynak: <span class="text-white/50">flaw.wazder.com /api/admin/access-log</span> · şifre değişince eski cookie'ler 7 gün geçerli kalır
+      </footer>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const fmtTime = (iso: string) => {
+    try {
+      return new Intl.DateTimeFormat('tr-TR', {
+        day: '2-digit', month: '2-digit', year: '2-digit',
+        hour: '2-digit', minute: '2-digit',
+      }).format(new Date(iso));
+    } catch { return iso ?? '—'; }
+  };
+
+  // Compact device label from a user-agent string.
+  const device = (ua: string | null): string => {
+    if (!ua) return '—';
+    const os = /iPhone|iPad/.test(ua) ? 'iOS'
+      : /Android/.test(ua) ? 'Android'
+      : /Mac OS X|Macintosh/.test(ua) ? 'macOS'
+      : /Windows/.test(ua) ? 'Windows'
+      : /Linux/.test(ua) ? 'Linux' : '';
+    const br = /Edg\//.test(ua) ? 'Edge'
+      : /Chrome\//.test(ua) ? 'Chrome'
+      : /Safari\//.test(ua) ? 'Safari'
+      : /Firefox\//.test(ua) ? 'Firefox' : '';
+    return [br, os].filter(Boolean).join(' · ') || 'bilinmiyor';
+  };
+
+  const flag = (cc: string | null): string => {
+    if (!cc || cc.length !== 2) return cc ?? '—';
+    const A = 0x1f1e6;
+    return String.fromCodePoint(...[...cc.toUpperCase()].map((c) => A + c.charCodeAt(0) - 65)) + ' ' + cc;
+  };
+
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+
+  type Row = { occurred_at: string; ip: string | null; country: string | null; user_agent: string | null; method: string | null; outcome: string };
+
+  async function load() {
+    const errEl = document.getElementById('error')!;
+    const emptyEl = document.getElementById('empty')!;
+    errEl.style.display = 'none';
+    try {
+      const res = await fetch('/flaw/access-data', { headers: { accept: 'application/json' } });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json() as { entries: Row[] };
+      const rows = data.entries ?? [];
+
+      const granted = rows.filter((r) => r.outcome === 'granted');
+      const ips = new Set(granted.map((r) => r.ip).filter(Boolean));
+      document.getElementById('stat-granted')!.textContent = String(granted.length);
+      document.getElementById('stat-denied')!.textContent = String(rows.length - granted.length);
+      document.getElementById('stat-ips')!.textContent = String(ips.size);
+      document.getElementById('stat-last')!.textContent = granted[0] ? fmtTime(granted[0].occurred_at) : '—';
+      document.getElementById('row-count')!.textContent = String(rows.length);
+
+      const tbody = document.getElementById('rows')!;
+      emptyEl.style.display = rows.length ? 'none' : 'block';
+      tbody.innerHTML = rows.map((r) => {
+        const ok = r.outcome === 'granted';
+        const badge = ok
+          ? '<span class="text-emerald-400/90">giriş</span>'
+          : '<span class="text-red-400/80">red</span>';
+        return `<tr class="border-t border-white/10 hover:bg-white/[0.03]">
+          <td class="py-2.5 pr-4 text-white/80 whitespace-nowrap tabular-nums">${fmtTime(r.occurred_at)}</td>
+          <td class="py-2.5 pr-4 whitespace-nowrap">${badge}</td>
+          <td class="py-2.5 pr-4 text-white/60 whitespace-nowrap tabular-nums">${esc(r.ip ?? '—')}</td>
+          <td class="py-2.5 pr-4 text-white/60 whitespace-nowrap">${esc(flag(r.country))}</td>
+          <td class="py-2.5 pr-4 text-white/60">${esc(device(r.user_agent))}</td>
+          <td class="py-2.5 pr-4 text-white/40 whitespace-nowrap">${esc(r.method ?? '—')}</td>
+        </tr>`;
+      }).join('');
+    } catch (e) {
+      errEl.textContent = 'Yüklenemedi: ' + (e instanceof Error ? e.message : 'hata');
+      errEl.style.display = 'block';
+    }
+  }
+
+  document.getElementById('refresh')?.addEventListener('click', load);
+  document.getElementById('logout')?.addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    location.href = '/hub';
+  });
+  load();
+</script>
