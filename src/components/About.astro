@@ -1,16 +1,9 @@
 ---
-const skills = [
-  { group: 'Languages', items: ['Python', 'TypeScript', 'JavaScript', 'Rust', 'C#', 'SQL'] },
-  { group: 'AI / ML', items: ['PyTorch', 'TensorFlow', 'Computer Vision', 'NLP'] },
-  { group: 'Frameworks', items: ['React', 'Next.js', 'Node.js', '.NET', 'Unity'] },
-  { group: 'Tools & Cloud', items: ['Docker', 'Git', 'REST APIs', 'GCP'] },
-];
-
 const education = [
   {
     school: 'İstanbul Ticaret Üniversitesi',
     degree: 'B.Sc. Computer Engineering',
-    period: 'Sep 2023 — Jul 2026 (Expected)',
+    period: 'Sep 2023 — Jul 2026',
   },
   {
     school: 'Fatih Sultan Mehmet Vakıf Üniversitesi',
@@ -18,14 +11,24 @@ const education = [
     period: 'Sep 2022 — Jul 2023',
   },
 ];
+
+const publication = {
+  title:
+    'Performance Analysis of Vision-Language-Action Models: Evaluating Turkish Command Understanding in OpenVLA',
+  authors: 'H. Tatar, U. Gökmen, I. Akkoyun, S. Kahraman',
+  venue: 'IEEE SIU 2026 · 34th Signal Processing and Communications Applications Conference, İstanbul',
+  date: 'Jul 2026',
+  doi: '10.1109/SIU71813.2026.11636432',
+  href: 'https://ieeexplore.ieee.org/document/11636432',
+};
 ---
 
 <section id="about" class="py-32 px-6">
   <div class="mx-auto max-w-3xl">
     <h2 class="text-sm uppercase tracking-[0.3em] text-white mb-10">About</h2>
 
-    <div class="grid md:grid-cols-3 gap-12">
-      <div class="md:col-span-1">
+    <div class="grid md:grid-cols-2 md:divide-x md:divide-white/10">
+      <div class="md:pr-10">
         <h3 class="text-xs uppercase tracking-[0.2em] text-white mb-4">Education</h3>
         <ul class="space-y-5">
           {education.map((e) => (
@@ -38,16 +41,18 @@ const education = [
         </ul>
       </div>
 
-      <div class="md:col-span-2">
-        <h3 class="text-xs uppercase tracking-[0.2em] text-white mb-4">Skills</h3>
-        <dl class="space-y-5 sm:space-y-4">
-          {skills.map((s) => (
-            <div class="flex flex-col sm:grid sm:grid-cols-[120px_1fr] gap-1 sm:gap-4 sm:items-baseline">
-              <dt class="text-xs uppercase tracking-wider text-white">{s.group}</dt>
-              <dd class="text-sm text-white">{s.items.join(' · ')}</dd>
-            </div>
-          ))}
-        </dl>
+      <div class="mt-12 md:mt-0 md:pl-10">
+        <h3 class="text-xs uppercase tracking-[0.2em] text-white mb-4">Publication</h3>
+        <a href={publication.href} target="_blank" rel="noreferrer" class="block group">
+          <div class="text-sm font-light leading-relaxed">
+            {publication.title} <span class="arrow arrow-up-right text-xs">↗</span>
+          </div>
+          <div class="text-xs text-white mt-2">{publication.authors}</div>
+          <div class="text-xs text-white mt-1">{publication.venue}</div>
+          <div class="text-xs text-white mt-1">
+            {publication.date} <span class="text-white">·</span> DOI {publication.doi}
+          </div>
+        </a>
       </div>
     </div>
   </div>
