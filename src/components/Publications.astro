@@ -1,11 +1,24 @@
 ---
-const publications = [
+type Publication = {
+  title: string;
+  authors: string;
+  venue: string;
+  status: string;
+  date: string;
+  doi: string;
+  href: string;
+};
+
+const publications: Publication[] = [
   {
     title:
-      'Cross-Lingual Performance Analysis of Vision-Language-Action Models: Evaluating Turkish Command Understanding in OpenVLA',
-    venue: 'IEEE SIU 2026',
-    status: 'Accepted',
+      'Performance Analysis of Vision-Language-Action Models: Evaluating Turkish Command Understanding in OpenVLA',
+    authors: 'H. Tatar, U. Gökmen, I. Akkoyun, S. Kahraman',
+    venue: 'IEEE SIU 2026 · 34th Signal Processing and Communications Applications Conference, İstanbul',
+    status: 'Published',
     date: 'Jul 2026',
+    doi: '10.1109/SIU71813.2026.11636432',
+    href: 'https://ieeexplore.ieee.org/document/11636432',
   },
 ];
 
@@ -31,16 +44,22 @@ const certifications = [
     <div class="space-y-10">
       <div>
         <h3 class="text-xs uppercase tracking-[0.2em] text-white mb-4">Publications</h3>
-        <ul class="space-y-4">
+        <ul class="space-y-6">
           {publications.map((p) => (
             <li>
-              <div class="flex items-baseline justify-between gap-4 flex-wrap">
-                <span class="text-sm text-white max-w-2xl leading-relaxed">{p.title}</span>
-                <span class="text-xs text-white whitespace-nowrap">{p.date}</span>
-              </div>
-              <div class="text-xs text-white mt-1">
-                {p.venue} <span class="text-white">·</span> {p.status}
-              </div>
+              <a href={p.href} target="_blank" rel="noreferrer" class="block group">
+                <div class="flex items-baseline justify-between gap-4 flex-wrap">
+                  <span class="text-sm text-white max-w-2xl leading-relaxed">
+                    {p.title} <span class="arrow arrow-up-right text-xs">↗</span>
+                  </span>
+                  <span class="text-xs text-white whitespace-nowrap">{p.date}</span>
+                </div>
+                <div class="text-xs text-white mt-1">{p.authors}</div>
+                <div class="text-xs text-white mt-1">
+                  {p.venue} <span class="text-white">·</span> {p.status}
+                </div>
+                <div class="text-xs text-white/60 mt-1">DOI {p.doi}</div>
+              </a>
             </li>
           ))}
         </ul>
