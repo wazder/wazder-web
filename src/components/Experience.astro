@@ -15,18 +15,33 @@ type Job = {
 
 const jobs: Job[] = [
   {
-    company: 'Independent Software & AI Studio',
-    location: 'Istanbul, Türkiye',
-    url: 'https://camellayer.com',
+    company: 'CMA Aviation Solutions LLC',
+    location: 'Remote',
     roles: [
       {
-        title: 'Co-founder & Engineer',
-        type: 'Freelance',
-        period: 'Mar 2026 — Present',
+        title: 'Contract Software & AI Engineer',
+        type: 'Bus fleet operations platform',
+        period: 'Aug 2026 — Present',
         points: [
-          'Built and run a two-person studio shipping custom software and AI systems to paying clients.',
-          'Own engagements end-to-end: requirements, design, development, deployment, and ongoing support.',
-          'Co-creator of camellayer.com (CLL), an in-house product built alongside client work.',
+          'Designed a two-plane architecture separating high-frequency location telemetry (HTTP API, Lambda, DynamoDB) from consistency-critical CRUD and live subscriptions (AWS AppSync GraphQL), across 5 CDK stacks and 43 resolvers.',
+          'Encoded regulatory hours-of-service limits as a unit-tested pure module, including multi-driver crew math where a two-driver crew is legal on combined remaining hours neither driver could cover alone.',
+          "Found four classes of silent AppSync resolver failure invisible to TypeScript, lint, and CDK synth by driving the platform's own evaluate-code API, then wired automated validation of all 48 resolvers into CI.",
+        ],
+      },
+    ],
+  },
+  {
+    company: 'Flaw Wears',
+    location: 'Istanbul, Türkiye',
+    roles: [
+      {
+        title: 'Contract Software & AI Engineer',
+        type: 'AI customer service and ad automation',
+        period: 'May 2026 — Aug 2026',
+        points: [
+          'Built the orchestration layer of an async AI customer-service pipeline (FastAPI, async SQLAlchemy, PostgreSQL) ingesting HMAC-verified webhooks from four messaging channels through a ten-stage turn.',
+          'Cut model spend by short-circuiting intent classification with two zero-token heuristics ahead of any model call; roughly 67% of conversations were classified without one.',
+          'Eliminated duplicate customer messages during rolling deploys with a Postgres transaction-scoped advisory lock keyed on conversation id — one of 771 test functions across 43 modules covering 19,094 lines of production Python.',
         ],
       },
     ],
@@ -40,46 +55,25 @@ const jobs: Job[] = [
         type: 'Contract',
         period: 'Mar 2026 — Present',
         points: [
-          'Built web-based interfaces with interactive 3D rendering for geospatial data visualization.',
-          'Developed full-stack features across the GIS web product, from data layer to client.',
+          'Built web interfaces with interactive 3D rendering for geospatial data visualization, and full-stack features across the product from data layer to client.',
+          "Migrated an industrial distributor's catalog off a legacy Laravel CMS: an ETL parsing 2,798 bilingual records across 266 categories into 1,875 deduplicated products.",
+          'Implemented shared canonical and hreflang metadata plus a locale-aware sitemap covering all products across three locales.',
         ],
       },
     ],
   },
   {
-    company: 'okeep.co (yaptir.io)',
+    company: 'okeep.co / yaptir.io',
     location: 'Istanbul, Türkiye',
     roles: [
       {
-        title: 'Automation Engineer',
+        title: 'Software & Automation Engineer',
         type: 'Contract',
-        period: 'Mar 2026 — May 2026',
+        period: 'Jan 2026 — May 2026',
         points: [
-          'Designed and shipped automation workflows for AI-driven client operations.',
-          'Maintained AI tooling integrations with downstream business systems to cut recurring manual overhead.',
-        ],
-      },
-      {
-        title: 'Software Engineer',
-        type: 'Contract',
-        period: 'Jan 2026 — Mar 2026',
-        points: [
-          'Delivered end-to-end software and automation projects, from scoping to deployment.',
-          'Led a small engineering team, handled client-facing discussions and parallel engagements.',
-        ],
-      },
-    ],
-  },
-  {
-    company: 'B4AFC — Business for Aging Friendly Community',
-    location: 'Istanbul, Türkiye',
-    roles: [
-      {
-        title: 'IT Specialist',
-        type: 'Part-time',
-        period: 'Jan 2026 — Mar 2026',
-        points: [
-          "Designed, built, and maintained the organization's website; streamlined operations via digital solutions.",
+          "Built the agency's marketing site (Vite, three.js WebGL hero, Groq-backed chat assistant); led a small engineering team and ran client-facing technical discussions across parallel engagements.",
+          'Shipped automation workflows for AI-driven client operations; closed the engagement with a security pass removing hardcoded credentials from the repository.',
+          'Alongside client work, built CamelLayer (Turkish-to-English prompt compression, 17 versions against measured tokenizer counts) and Retro Lokal (Next.js 16, Supabase, iyzico storefront with a Flutter companion app).',
         ],
       },
     ],
@@ -93,8 +87,8 @@ const jobs: Job[] = [
         type: 'Internship',
         period: 'Aug 2025 — Dec 2025',
         points: [
-          'Designed a fully functional ML model and pipeline for image processing projects.',
-          'Integrated hardware and software (ESP, AD, ADS modules) for global airway companies.',
+          'Built an image-based lost-baggage matching pipeline combining color, shape, and texture similarity with multi-angle, centroid-weighted voting — sole author across 161 commits and 29 versioned releases.',
+          'Integrated ESP, AD, and ADS hardware modules with the imaging software for global airline companies.',
         ],
       },
       {
@@ -102,36 +96,31 @@ const jobs: Job[] = [
         type: 'Summer Internship',
         period: 'Jun 2025 — Aug 2025',
         points: [
-          'Built initial prototypes for image processing pipelines later expanded during R&D promotion.',
+          'Built initial prototypes for image processing pipelines later expanded during the R&D role.',
         ],
       },
     ],
   },
   {
-    company: 'Self-employed',
+    company: 'Earlier',
     location: 'Istanbul, Türkiye',
     roles: [
       {
-        title: 'Game Developer',
+        title: 'B4AFC — IT Specialist',
+        type: 'Part-time',
+        period: 'Jan 2026 — Mar 2026',
+        points: ["Designed, built, and maintained the organization's website and internal digital tooling."],
+      },
+      {
+        title: 'Independent — Game Developer',
         period: 'Aug 2024 — Dec 2024',
-        points: [
-          'Developed an isometric Pokémon-like game and a 2D office-themed game in Unity / C#.',
-          'Designed gameplay elements and handled artistic direction end-to-end.',
-        ],
+        points: ['Shipped an isometric RPG and a 2D office game in Unity and C#, handling gameplay design and art direction end to end.'],
       },
-    ],
-  },
-  {
-    company: 'NOVENTIQ Makronet Bilgi Teknolojileri',
-    location: 'Istanbul, Türkiye',
-    roles: [
       {
-        title: 'Software Intern',
+        title: 'NOVENTIQ Makronet — Software Intern',
         type: 'Summer Internship',
         period: 'Jul 2024 — Aug 2024',
-        points: [
-          'Contributed to internal .NET and web tools; supported the data analytics team on reporting workflows.',
-        ],
+        points: ['Contributed to internal .NET and web tools; supported the data analytics team on reporting workflows.'],
       },
     ],
   },

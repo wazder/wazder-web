@@ -8,30 +8,44 @@ type Project = {
 
 const projects: Project[] = [
   {
-    name: 'CamelLayer',
+    name: 'xtask — compliance platform for German PV installers',
     description:
-      'AI coding in your native language — translates, compresses, and optimizes prompts to cut ~40% token usage. Co-created in-house product.',
-    href: 'https://camellayer.com',
-    tags: ['Product', 'NLP', 'CLI'],
+      'Fills the official 23-page VDE-AR-N 4105 grid-connection AcroForm (557 fields across four forms) from project data and exports XRechnung 3.0 UBL invoices with the § 12 UStG VAT split. Live client-side demo; repo private (client work).',
+    href: 'https://wazder.github.io/powerbird/',
+    tags: ['Live demo', 'TypeScript', 'PDF', 'Compliance'],
   },
   {
-    name: 'NEST',
+    name: 'Quantum — Windows on Apple Silicon',
     description:
-      'Neural EEG Sequence Transducer — decoding brain signals into open-vocabulary text via Transformer encoders and BART cross-attention decoding.',
-    href: 'https://github.com/wazder/NEST',
-    tags: ['PyTorch', 'BCI', 'Transformers'],
+      'From-scratch Windows compatibility layer for macOS in Rust: PE/COFF loader, x86-64 decoder, AArch64 JIT emitter, DXBC-to-Metal shader translation. No Wine, no third-party crates. Unfinished, read-the-code project.',
+    href: 'https://github.com/wazder/quantum',
+    tags: ['Rust', 'JIT', 'Systems'],
   },
   {
     name: 'Cognitive Drone',
     description:
-      'Benchmarking VLM reasoning for autonomous drone gate selection — multi-model evaluation on CognitiveDroneBench with CLIP-free matching.',
+      'Benchmarking VLM reasoning for autonomous drone gate selection — Qwen2.5-VL and LLaVA evaluated on the full 218-entry CognitiveDroneBench, best configuration 94.5% against a 71.6% CLIP-only baseline.',
     href: 'https://github.com/wazder/cognitive-drone',
     tags: ['VLM', 'Computer Vision', 'Benchmark'],
   },
   {
+    name: 'NEST',
+    description:
+      'Neural EEG Sequence Transducer — decoding brain signals into open-vocabulary text via Transformer encoders and BART cross-attention decoding. Research framework; end-to-end benchmark pending.',
+    href: 'https://github.com/wazder/NEST',
+    tags: ['PyTorch', 'BCI', 'Transformers'],
+  },
+  {
+    name: 'CamelLayer',
+    description:
+      'Turkish-to-English prompt-compression engine for AI coding tools, iterated across 17 versions against measured tokenizer counts, with hooks for the Claude, Gemini, Codex, and Copilot CLIs. Closed source; API offline pending a rewrite.',
+    href: 'https://camellayer.com',
+    tags: ['Product', 'NLP', 'CLI'],
+  },
+  {
     name: 'Turkish Command Understanding in OpenVLA',
     description:
-      'IEEE SIU 2026 paper — performance analysis of vision-language-action models on Turkish robot commands, published in IEEE Xplore.',
+      'IEEE SIU 2026 paper — performance analysis of vision-language-action models on Turkish robot commands, published in IEEE Xplore. First and corresponding author.',
     href: 'https://ieeexplore.ieee.org/document/11636432',
     tags: ['Research', 'VLA', 'Multilingual'],
   },

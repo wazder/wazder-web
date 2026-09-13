@@ -37,10 +37,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const listed = await env.CONTENT.list({ limit: 1000, include: ['customMetadata'] } as any);
   for (const obj of listed.objects) {
     if (obj.key.startsWith('_')) continue;
+    const isPublic = obj.customMetadata?.public === 'true';
+    // Never expose private object metadata (path, size, timestamps) to anonymous callers.
+    if (!isPublic && !authed) continue;
     userItems.push({
       path: obj.key,
       kind: 'content',
-      public: obj.customMetadata?.public === 'true',
+      public: isPublic,
       format: obj.customMetadata?.format,
       size: obj.size,
       uploaded: obj.uploaded.getTime(),
