@@ -23,7 +23,7 @@ const jobs: Job[] = [
         type: 'Bus fleet operations platform',
         period: 'May 2026 — Sep 2026',
         points: [
-          'Designed a two-plane architecture separating high-frequency location telemetry (HTTP API, Lambda, DynamoDB) from consistency-critical CRUD and live subscriptions (AWS AppSync GraphQL), across 5 CDK stacks and 43 resolvers.',
+          'Designed a two-plane architecture separating high-frequency location telemetry (HTTP API, Lambda, DynamoDB) from consistency-critical CRUD and live subscriptions (AWS AppSync GraphQL), across 5 CDK stacks and 48 resolvers.',
           'Encoded regulatory hours-of-service limits as a unit-tested pure module, including multi-driver crew math where a two-driver crew is legal on combined remaining hours neither driver could cover alone.',
           "Found four classes of silent AppSync resolver failure invisible to TypeScript, lint, and CDK synth by driving the platform's own evaluate-code API, then wired automated validation of all 48 resolvers into CI.",
         ],
@@ -37,10 +37,11 @@ const jobs: Job[] = [
       {
         title: 'Contract Software & AI Engineer',
         type: 'AI customer service and ad automation',
-        period: 'May 2026 — Aug 2026',
+        period: 'May 2026 — Sep 2026',
         points: [
           'Built the orchestration layer of an async AI customer-service pipeline (FastAPI, async SQLAlchemy, PostgreSQL) ingesting HMAC-verified webhooks from four messaging channels through a ten-stage turn.',
           'Cut model spend by short-circuiting intent classification with two zero-token heuristics ahead of any model call; roughly 67% of conversations were classified without one.',
+          'Restructured the model request into cached and per-turn blocks after finding the previously fused system prompt broke provider-side prompt-cache prefix matching on every call.',
           'Eliminated duplicate customer messages during rolling deploys with a Postgres transaction-scoped advisory lock keyed on conversation id — one of 771 test functions across 43 modules covering 19,094 lines of production Python.',
         ],
       },
@@ -74,7 +75,7 @@ const jobs: Job[] = [
         points: [
           "Built the agency's marketing site (Vite, three.js WebGL hero, Groq-backed chat assistant); led a small engineering team and ran client-facing technical discussions across parallel engagements.",
           'Shipped automation workflows for AI-driven client operations; closed the engagement with a security pass removing hardcoded credentials from the repository.',
-          'Alongside client work, built CamelLayer (Turkish-to-English prompt compression, 17 versions against measured tokenizer counts) and Retro Lokal (Next.js 16, Supabase, iyzico storefront with a Flutter companion app).',
+          'Alongside client work, built Retro Lokal, a vintage storefront on Next.js 16, Supabase, and iyzico with a CraftJS page builder and a Flutter companion app.',
         ],
       },
     ],

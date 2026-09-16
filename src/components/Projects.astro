@@ -17,7 +17,7 @@ const projects: Project[] = [
   {
     name: 'Quantum — Windows on Apple Silicon',
     description:
-      'From-scratch Windows compatibility layer for macOS in Rust: PE/COFF loader, x86-64 decoder, AArch64 JIT emitter, DXBC-to-Metal shader translation. No Wine, no third-party crates. Unfinished, read-the-code project.',
+      'From-scratch Windows compatibility layer for macOS in Rust: PE/COFF loader, x86-64 decoder, AArch64 JIT emitter validated against clang-assembled golden output, DXBC-to-Metal shader translation. No Wine, no third-party crates. Seven-crate Cargo workspace, 84 tests, clippy-clean under -D warnings.',
     href: 'https://github.com/wazder/quantum',
     tags: ['Rust', 'JIT', 'Systems'],
   },
@@ -38,7 +38,7 @@ const projects: Project[] = [
   {
     name: 'CamelLayer',
     description:
-      'Turkish-to-English prompt-compression engine for AI coding tools, iterated across 17 versions against measured tokenizer counts, with hooks for the Claude, Gemini, Codex, and Copilot CLIs. Closed source; API offline pending a rewrite.',
+      "Detects the language of a developer's prompt, fixes typos, compresses it, and translates it to English before it reaches the model — wired into Claude, Gemini, Codex, and Copilot CLIs through hooks, a shell wrapper, and a proxy mode. Benchmarked on 1,600 test cases across 14 categories: 100% pass rate, 41.3% average token savings, zero false positives on English input. Free and Pro tiers, served from Google Cloud Run.",
     href: 'https://camellayer.com',
     tags: ['Product', 'NLP', 'CLI'],
   },

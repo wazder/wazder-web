@@ -9,6 +9,7 @@ interface Env {
 
 const REDIRECTS: Record<string, string> = {
   cv: '/hasan-tatar-cv.pdf',
+  paper: '/paper.pdf',
 };
 
 export const onRequestGet: PagesFunction<Env> = async ({ params, env, request }) => {
