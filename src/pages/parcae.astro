@@ -1,0 +1,415 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
+---
+
+<Layout title="parcae — form" description="Parcae ekip formu.">
+  <div class="fixed top-0 inset-x-0 z-50 bg-black/90 backdrop-blur border-b border-white/10">
+    <div class="max-w-2xl mx-auto px-6 h-11 flex items-center gap-4 font-mono text-xs">
+      <span class="tracking-[0.2em] uppercase">parcae</span>
+      <span id="who-label" class="font-thin text-white/50 hidden"></span>
+      <span class="ml-auto font-thin text-white/50 tabular-nums" id="counter">0 / {TOTAL}</span>
+      <span id="save-state" class="font-thin text-white/30 w-20 text-right"></span>
+    </div>
+    <div class="h-px bg-white/10">
+      <div id="progress" class="h-px bg-white transition-all duration-300" style="width:0"></div>
+    </div>
+  </div>
+
+  <main class="min-h-screen px-6 pt-24 pb-32 font-mono text-sm text-white">
+    <div class="max-w-2xl mx-auto">
+      <!-- kim dolduruyor -->
+      <section id="gate">
+        <h1 class="font-sans text-3xl font-black tracking-tight mb-4">Parcae</h1>
+        <p class="font-thin leading-relaxed text-white/70 mb-2">
+          Oyunun ne olacağına ve kimin ne yapacağına karar vermeden önce üçümüzün
+          aynı şeyi mi düşündüğünü görmek istiyoruz.
+        </p>
+        <p class="font-thin leading-relaxed text-white/70 mb-8">
+          {SECTIONS.length} bölüm, {TOTAL} soru, yaklaşık 40 dakika. Yarım
+          bırakabilirsin — cevapların tarayıcında saklanıyor, kaldığın yerden
+          devam edersin. Bilmediğin soruyu boş geç, "bilmiyorum" da bir cevap.
+          Kimse kimsenin cevabını görmüyor, birbirinize bakmadan doldurun.
+        </p>
+        <p class="text-xs uppercase tracking-[0.2em] text-white/40 mb-3">Kimsin</p>
+        <div class="grid gap-2">
+          {
+            PEOPLE.map((p) => (
+              <button
+                type="button"
+                data-who={p.key}
+                class="who-btn text-left border border-white/20 hover:border-white hover:bg-white/5 px-4 py-3 transition-colors"
+              >
+                <span class="block">{p.name}</span>
+                <span class="block text-xs font-thin text-white/40 mt-0.5">{p.role}</span>
+              </button>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- form -->
+      <form id="form" class="hidden">
+        {
+          SECTIONS.map((s) => (
+            <section class="mb-16" data-section={s.id}>
+              <div class="border-t border-white/20 pt-4 mb-8">
+                <p class="text-xs uppercase tracking-[0.2em] text-white/40">
+                  {s.no} — {s.title}
+                </p>
+                <p class="font-thin text-white/60 mt-2 leading-relaxed">{s.lead}</p>
+              </div>
+
+              {s.qs.map((q, i) => (
+                <div class="mb-10 q-block" data-qid={q.id} data-qtype={q.t}>
+                  <div class="flex gap-3">
+                    <span class="text-white/30 tabular-nums shrink-0">
+                      {s.no}.{String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div class="min-w-0 flex-1">
+                      <p class="leading-relaxed">{q.q}</p>
+                      {q.hint && <p class="text-xs font-thin text-white/40 mt-1">{q.hint}</p>}
+
+                      {(q.t === 'choice' || q.t === 'multi') && (
+                        <div class="mt-3 grid gap-1.5">
+                          {q.opts!.map((o, oi) => (
+                            <label class="opt flex items-start gap-2.5 border border-white/15 px-3 py-2 cursor-pointer hover:border-white/40 transition-colors">
+                              <input
+                                type={q.t === 'multi' ? 'checkbox' : 'radio'}
+                                name={`q_${q.id}`}
+                                id={`q_${q.id}_${oi}`}
+                                value={o}
+                                class="mt-1 accent-white shrink-0"
+                              />
+                              <span class="font-thin leading-relaxed">{o}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+
+                      {q.t === 'scale' && (
+                        <div class="mt-3">
+                          <div class="flex gap-1.5">
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <label class="opt flex-1 border border-white/15 py-2 text-center cursor-pointer hover:border-white/40 transition-colors">
+                                <input
+                                  type="radio"
+                                  name={`q_${q.id}`}
+                                  id={`q_${q.id}_${n}`}
+                                  value={String(n)}
+                                  class="sr-only"
+                                />
+                                <span class="tabular-nums">{n}</span>
+                              </label>
+                            ))}
+                          </div>
+                          <div class="flex justify-between text-xs font-thin text-white/40 mt-1.5 gap-4">
+                            <span>{q.lo}</span>
+                            <span class="text-right">{q.hi}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {q.t === 'text' && (
+                        <textarea
+                          id={`q_${q.id}`}
+                          name={`q_${q.id}`}
+                          rows="3"
+                          placeholder={q.ph}
+                          class="mt-3 w-full bg-transparent border border-white/15 focus:border-white outline-none px-3 py-2 font-thin leading-relaxed resize-y placeholder:text-white/25"
+                        />
+                      )}
+
+                      {q.t === 'short' && (
+                        <input
+                          type="text"
+                          id={`q_${q.id}`}
+                          name={`q_${q.id}`}
+                          placeholder={q.ph}
+                          class="mt-3 w-full bg-transparent border border-white/15 focus:border-white outline-none px-3 py-2 font-thin placeholder:text-white/25"
+                        />
+                      )}
+
+                      {q.note !== false && (
+                        <div class="note mt-2 hidden">
+                          <input
+                            type="text"
+                            id={`n_${q.id}`}
+                            placeholder="neden? (opsiyonel)"
+                            class="w-full bg-transparent border-b border-white/15 focus:border-white/60 outline-none py-1 text-xs font-thin placeholder:text-white/25"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </section>
+          ))
+        }
+
+        <div class="border-t border-white/20 pt-6">
+          <p id="left-note" class="font-thin text-white/50 mb-4"></p>
+          <button
+            type="submit"
+            class="border border-white px-5 py-2.5 hover:bg-white hover:text-black transition-colors"
+          >
+            Gönder
+          </button>
+        </div>
+      </form>
+
+      <!-- teşekkürler -->
+      <section id="done" class="hidden">
+        <h1 class="font-sans text-3xl font-black tracking-tight mb-4">Gitti.</h1>
+        <p class="font-thin leading-relaxed text-white/70">
+          Cevapların kaydedildi. Üçümüz de doldurunca oturup ayrıştığımız yerleri
+          konuşacağız.
+        </p>
+        <button
+          id="reopen"
+          type="button"
+          class="mt-6 text-xs font-thin text-white/40 hover:text-white hover:underline underline-offset-4"
+        >
+          cevaplarımı tekrar düzenle
+        </button>
+      </section>
+    </div>
+  </main>
+
+  <style>
+    .opt:has(input:checked) {
+      border-color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .opt:has(input:checked) span {
+      font-weight: 400;
+    }
+  </style>
+
+  <script>
+    import { SECTIONS, TOTAL, PEOPLE } from '../data/parcae/questions';
+    import type { AnswerMap } from '../lib/parcae/types';
+
+    const LS = 'parcae-form-v1';
+    const API = '/api/parcae';
+
+    const gate = document.getElementById('gate') as HTMLElement;
+    const form = document.getElementById('form') as HTMLFormElement;
+    const done = document.getElementById('done') as HTMLElement;
+    const counter = document.getElementById('counter') as HTMLElement;
+    const progress = document.getElementById('progress') as HTMLElement;
+    const saveState = document.getElementById('save-state') as HTMLElement;
+    const whoLabel = document.getElementById('who-label') as HTMLElement;
+    const leftNote = document.getElementById('left-note') as HTMLElement;
+
+    const ALL = SECTIONS.flatMap((s) => s.qs);
+
+    type State = { who: string | null; id: string; answers: AnswerMap; submitted: boolean };
+    let state: State = { who: null, id: newId(), answers: {}, submitted: false };
+
+    function newId(): string {
+      const a = new Uint8Array(12);
+      crypto.getRandomValues(a);
+      return Array.from(a, (b) => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function load() {
+      try {
+        const raw = localStorage.getItem(LS);
+        if (!raw) return;
+        const o = JSON.parse(raw);
+        if (o && typeof o === 'object') {
+          state = {
+            who: o.who ?? null,
+            id: o.id || newId(),
+            answers: o.answers || {},
+            submitted: !!o.submitted,
+          };
+        }
+      } catch {
+        /* private mode */
+      }
+    }
+
+    function persist() {
+      try {
+        localStorage.setItem(LS, JSON.stringify(state));
+      } catch {
+        /* ignore */
+      }
+    }
+
+    let timer: number | undefined;
+    function scheduleSync() {
+      persist();
+      if (timer) clearTimeout(timer);
+      saveState.textContent = '...';
+      timer = window.setTimeout(sync, 2000);
+    }
+
+    async function sync(): Promise<boolean> {
+      if (!state.who) return false;
+      try {
+        const res = await fetch(API, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            id: state.id,
+            who: state.who,
+            answers: state.answers,
+            submitted: state.submitted,
+          }),
+        });
+        saveState.textContent = res.ok ? 'kaydedildi' : 'kayıt hatası';
+        return res.ok;
+      } catch {
+        saveState.textContent = 'bağlantı yok';
+        return false;
+      }
+    }
+
+    function answered(id: string): boolean {
+      const a = state.answers[id];
+      if (!a || a.v == null) return false;
+      return Array.isArray(a.v) ? a.v.length > 0 : String(a.v).trim() !== '';
+    }
+
+    function refreshCount() {
+      const n = ALL.filter((q) => answered(q.id)).length;
+      counter.textContent = `${n} / ${TOTAL}`;
+      progress.style.width = `${TOTAL ? (n / TOTAL) * 100 : 0}%`;
+      const left = TOTAL - n;
+      leftNote.textContent = left
+        ? `${left} soru boş. Boş bırakabilirsin ama emin olduğun yerleri doldur.`
+        : 'Hepsi cevaplandı.';
+    }
+
+    function noteBox(block: Element): HTMLElement | null {
+      return block.querySelector('.note');
+    }
+
+    function paint() {
+      for (const q of ALL) {
+        const a = state.answers[q.id];
+        const block = form.querySelector(`[data-qid="${q.id}"]`);
+        if (!block) continue;
+
+        if (a?.v != null) {
+          if (q.t === 'multi' && Array.isArray(a.v)) {
+            block.querySelectorAll<HTMLInputElement>('input[type=checkbox]').forEach((el) => {
+              el.checked = (a.v as string[]).includes(el.value);
+            });
+          } else if (q.t === 'choice' || q.t === 'scale') {
+            block.querySelectorAll<HTMLInputElement>('input[type=radio]').forEach((el) => {
+              el.checked = el.value === a.v;
+            });
+          } else {
+            const f = block.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+              'textarea, input[type=text]:not([id^="n_"])',
+            );
+            if (f) f.value = String(a.v);
+          }
+        }
+        const nb = noteBox(block);
+        if (nb) {
+          const ni = nb.querySelector('input') as HTMLInputElement | null;
+          if (ni && a?.n) ni.value = a.n;
+          nb.classList.toggle('hidden', !answered(q.id));
+        }
+      }
+      refreshCount();
+    }
+
+    function setAnswer(id: string, v?: string | string[], n?: string) {
+      const cur = state.answers[id] ?? {};
+      if (v !== undefined) cur.v = v;
+      if (n !== undefined) cur.n = n;
+      state.answers[id] = cur;
+
+      const block = form.querySelector(`[data-qid="${id}"]`);
+      if (block) noteBox(block)?.classList.toggle('hidden', !answered(id));
+      refreshCount();
+      scheduleSync();
+    }
+
+    function showForm() {
+      gate.classList.add('hidden');
+      done.classList.add('hidden');
+      form.classList.remove('hidden');
+      const p = PEOPLE.find((x) => x.key === state.who);
+      whoLabel.textContent = p ? p.name.toLowerCase() : '';
+      whoLabel.classList.remove('hidden');
+      paint();
+    }
+
+    function showDone() {
+      gate.classList.add('hidden');
+      form.classList.add('hidden');
+      done.classList.remove('hidden');
+      whoLabel.classList.add('hidden');
+    }
+
+    // identity
+    document.querySelectorAll<HTMLButtonElement>('.who-btn').forEach((b) => {
+      b.addEventListener('click', () => {
+        state.who = b.dataset.who ?? null;
+        persist();
+        showForm();
+        window.scrollTo({ top: 0 });
+      });
+    });
+
+    // answers
+    form.addEventListener('change', (e) => {
+      const el = e.target as HTMLInputElement;
+      const block = el.closest('[data-qid]') as HTMLElement | null;
+      if (!block) return;
+      const id = block.dataset.qid!;
+      const t = block.dataset.qtype!;
+      if (el.id.startsWith('n_')) return;
+
+      if (t === 'multi') {
+        const picked: string[] = [];
+        block.querySelectorAll<HTMLInputElement>('input:checked').forEach((x) => picked.push(x.value));
+        setAnswer(id, picked);
+      } else if (t === 'choice' || t === 'scale') {
+        setAnswer(id, el.value);
+      }
+    });
+
+    form.addEventListener('input', (e) => {
+      const el = e.target as HTMLInputElement | HTMLTextAreaElement;
+      const block = el.closest('[data-qid]') as HTMLElement | null;
+      if (!block) return;
+      const id = block.dataset.qid!;
+      if (el.id.startsWith('n_')) setAnswer(id, undefined, el.value);
+      else if (el.tagName === 'TEXTAREA' || el.getAttribute('type') === 'text') {
+        setAnswer(id, el.value);
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      state.submitted = true;
+      persist();
+      if (timer) clearTimeout(timer);
+      saveState.textContent = '...';
+      const ok = await sync();
+      if (ok) showDone();
+      else alert('Kaydedilemedi. İnternet bağlantını kontrol edip tekrar dene.');
+    });
+
+    document.getElementById('reopen')?.addEventListener('click', () => {
+      state.submitted = false;
+      persist();
+      showForm();
+    });
+
+    // boot
+    load();
+    if (state.who && state.submitted) showDone();
+    else if (state.who) showForm();
+    else refreshCount();
+  </script>
+</Layout>
