@@ -6,5 +6,11 @@ compatibility_date = "2025-05-01"
 binding = "CONTENT"
 bucket_name = "wazder-content"
 
+# FastCat web build (Godot HTML5): the game repo uploads it to `pull-web/play/*`
+# (bash relay/upload_web.sh); served at /fastcat/.
+[[r2_buckets]]
+binding = "FASTCAT"
+bucket_name = "pull-web"
+
 [ai]
 binding = "AI"

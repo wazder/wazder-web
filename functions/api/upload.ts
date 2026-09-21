@@ -8,7 +8,7 @@ interface Env {
 const MAX_BYTES = 25 * 1024 * 1024;
 const RESERVED = new Set([
   '', 'upload', 'notes', 'notes.admin', 'cv', 'api', 'index.html',
-  '404', 'favicon.ico', 'hub', 'py', 'delete', 'edit', 'ascii',
+  '404', 'favicon.ico', 'hub', 'py', 'delete', 'edit', 'ascii', 'fastcat',
 ]);
 
 function normalizePath(input: string): string {
