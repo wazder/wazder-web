@@ -105,7 +105,7 @@ export const SECTIONS: Section[] = [
         'Sütun ölçülemiyorsa sütun değil, slogandır.',
       ),
       C('p7', 'Bu oyun kimin için?', [
-        'Kendimiz için — beğenen beğenir',
+        'Kendimiz için, beğenen beğenir',
         'Kısa ve tuhaf indie oyun sevenler',
         'Hikâye odaklı oyuncular',
         'Zorluk ve ustalık arayanlar',
@@ -146,7 +146,7 @@ export const SECTIONS: Section[] = [
     no: '02',
     title: 'Çekirdek döngü',
     lead:
-      'Oyuncunun yüzlerce kez tekrarlayacağı 30 saniyelik eylem. Halo tasarımcısının sözü: "30 saniyeyi eğlenceli yapabilirsen onu bütün bir oyuna yayabilirsin." Bu döngü sıkıcıysa hikâye, müzik ve pixel art onu kurtarmıyor.',
+      'Oyuncunun yüzlerce kez tekrarlayacağı otuz saniyelik eylem. Halo\'nun tasarımcısı şöyle diyor: "Otuz saniyeyi eğlenceli yapabilirsen onu bütün bir oyuna yayabilirsin." Bu döngü sıkıcıysa hikâye de müzik de pixel art da onu kurtaramıyor.',
     qs: [
       C('l1', 'Oyunun ana türü ne?', [
         'Platformer',
@@ -154,7 +154,7 @@ export const SECTIONS: Section[] = [
         'Gizlilik (stealth)',
         'Dövüş / action',
         'Anlatı odaklı (yürü + seç)',
-        'Karışık — kat kat tür değişir',
+        'Karışık, kat kat tür değişir',
       ]),
       T(
         'l2',
@@ -172,7 +172,7 @@ export const SECTIONS: Section[] = [
       C('l5', 'Grafik, müzik ve hikâye olmadan, gri kutularla bu döngü eğlenceli olur mu?', [
         'Evet, kesinlikle',
         'Muhtemelen',
-        'Emin değilim — test etmeliyiz',
+        'Emin değilim, test etmemiz lazım',
         'Hayır, sunum olmadan anlamsız',
       ]),
       C('l6', 'Çekirdek döngünün çalıştığını ne zaman test edeceğiz?', [
@@ -195,9 +195,9 @@ export const SECTIONS: Section[] = [
         'Ölüm var ama hikâyeyi değiştirir',
       ]),
       C('l9', 'Zorluk felsefesi ne olmalı?', [
-        'Kolay — herkes bitirebilsin',
-        'Orta — adil ve öğretici',
-        'Zor — öğrenerek geçilsin',
+        'Kolay, herkes bitirebilsin',
+        'Orta, adil ve öğretici',
+        'Zor, öğrenerek geçilsin',
         'Ayarlanabilir zorluk',
       ]),
       C('l10', 'Zaman baskısı var mı?', ['Hiç yok', 'Sadece belirli anlarda', 'Neredeyse sürekli']),
@@ -214,7 +214,7 @@ export const SECTIONS: Section[] = [
     no: '03',
     title: 'Kapsam ve kesme listesi',
     lead:
-      '155 oyun postmortem\'i incelendiğinde en sık çıkan sebep kapsam. DOOM\'un tasarım belgesinden kalan ders: ne YAPMAYACAĞINI yazmak, ne yapacağını yazmaktan önemli. Aşağıdaki üç liste aynı maddeleri içeriyor — aynı maddeyi hem "şart" hem "yapmayacağız" işaretleyen çıkarsa, toplantının konusu o.',
+      'Yüz elli beş oyun postmortem\'i incelendiğinde en sık çıkan sebep kapsam oluyor. DOOM\'un tasarım belgesinden kalan ders şu: ne yapmayacağını yazmak, ne yapacağını yazmaktan daha önemli. Aşağıdaki üç liste aynı maddeleri içeriyor. Aynı maddeyi biri "şart", başkası "yapmayacağız" işaretlerse, toplantının konusu o madde.',
     qs: [
       M(
         'kp1',
@@ -241,11 +241,11 @@ export const SECTIONS: Section[] = [
         '1. ... 2. ... 3. ... 4. ...',
         'Önceden yazılmış kesme sırası, panikle yapılan kesmeden her zaman iyi.',
       ),
-      C('kp6', 'Kaç kat olmalı?', ['3–5 kat', '6–10 kat', '11–20 kat', '20+ kat']),
+      C('kp6', 'Kaç kat olmalı?', ['3-5 kat', '6-10 kat', '11-20 kat', '20+ kat']),
       C('kp7', 'Bir kat ortalama ne kadar sürsün?', [
-        '2–5 dakika',
-        '5–10 dakika',
-        '10–20 dakika',
+        '2-5 dakika',
+        '5-10 dakika',
+        '10-20 dakika',
         '20+ dakika',
       ]),
       X(
@@ -263,7 +263,7 @@ export const SECTIONS: Section[] = [
       C('kp10', 'Vaat ettiğimiz görsel kaliteyi bu ekiple gerçekten çıkarabilir miyiz?', [
         'Evet, rahatlıkla',
         'Evet ama kapsamı küçük tutarsak',
-        'Zor — dışarıdan destek lazım',
+        'Zor, dışarıdan destek lazım',
         'Hayır, hedefi düşürmeliyiz',
       ]),
     ],
@@ -276,13 +276,13 @@ export const SECTIONS: Section[] = [
     qs: [
       C('y1', 'İlerleme nasıl olsun?', [
         'Kat kat, tek yön yukarı',
-        'Bina açık — istediğin kata',
+        'Bina açık, istediğin kata gidersin',
         'Bölüm seçme ekranı',
         'Tek büyük bağlantılı harita',
       ]),
       S('y2', 'Katlar birbirinden ne kadar farklı olmalı?', 'aynı mantık tekrarlar', 'her kat bambaşka'),
       C('y3', 'Katların teması ofis departmanları mı olsun?', [
-        'Evet — İK, muhasebe, hukuk, IT',
+        'Evet: İK, muhasebe, hukuk, IT',
         'Hayır, soyut temalar',
         'Karışık: altlar gerçekçi, üstler soyut',
       ]),
@@ -328,7 +328,7 @@ export const SECTIONS: Section[] = [
     no: '05',
     title: 'Hikâye ve anlatım',
     lead:
-      'Bu aşamada tam senaryo yazılmaz, sadece sınırlar çizilir: kim anlatıyor, ne kadar metin var, kaç son var. Metin miktarı doğrudan takvim demek.',
+      'Bu aşamada tam senaryo yazılmıyor, sadece sınırlar çiziliyor: kim anlatıyor, ne kadar metin var, kaç son var. Metin miktarı doğrudan takvim demek.',
     qs: [
       M('h1', 'Hikâye hangi yollarla anlatılsın?', [
         'Diyaloglar',
@@ -341,7 +341,7 @@ export const SECTIONS: Section[] = [
       C('h2', 'Hikâyeyi kim anlatıyor?', [
         'Ana karakterin kendisi',
         'Dışarıdan bir anlatıcı',
-        'Kimse — çevre anlatıyor',
+        'Kimse anlatmıyor, çevre anlatıyor',
         'Patron / şirketin sesi',
       ]),
       C('h3', 'Ana karakter konuşuyor mu?', ['Evet, tam diyalog', 'Sadece iç ses', 'Sessiz kahraman']),
@@ -352,7 +352,7 @@ export const SECTIONS: Section[] = [
         'Soyut / sembolik bir varlık',
         'Sonda ortaya çıkan bir sürpriz',
       ]),
-      C('h6', 'Kaç farklı son olsun?', ['Tek son', '2–3 son', '4+ son']),
+      C('h6', 'Kaç farklı son olsun?', ['Tek son', '2-3 son', '4+ son']),
       T('h7', 'Final sahnesinde ne olmalı?', 'Kapı açılıyor ve...'),
       S('h8', 'Hikâye oyunun ne kadarı?', 'oynanış her şey', 'hikâye her şey'),
       C('h9', 'Metin miktarı ne olsun?', [
@@ -370,9 +370,9 @@ export const SECTIONS: Section[] = [
       C('h11', 'Oyunun dili ne olsun?', [
         'Sadece Türkçe',
         'Sadece İngilizce',
-        'İkisi birden — altyapı baştan kurulsun',
+        'İkisi birden, altyapı baştan kurulsun',
       ]),
-      X('h12', 'Kaç yan karakter olsun?', '3–4: güvenlik görevlisi, İK müdürü...'),
+      X('h12', 'Kaç yan karakter olsun?', '3-4: güvenlik görevlisi, İK müdürü...'),
       T('h13', 'Oyunun ilk 2 dakikasında oyuncu ne görmeli?'),
     ],
   },
@@ -400,11 +400,11 @@ export const SECTIONS: Section[] = [
         'CRT / scanline filtresi',
         'Parçacık efektleri',
         'Ekran sarsıntısı',
-        'Hiçbiri — temiz pixel',
+        'Hiçbiri, temiz pixel kalsın',
       ]),
       C('s5', 'UI stili ne olsun?', [
         'Klasik HUD',
-        'Diegetic — oyun dünyasının içinde',
+        'Diegetic, oyun dünyasının içinde',
         'Neredeyse hiç UI olmasın',
       ]),
       C('s6', 'Şiddet seviyesi ne olsun?', [
@@ -423,7 +423,7 @@ export const SECTIONS: Section[] = [
     no: '07',
     title: 'Pixel teknik',
     lead:
-      'Bu bölümün soruları sıkıcı görünüyor ama takvimi belirleyen yer burası: sprite çözünürlüğünü iki katına çıkarmak iş yükünü yaklaşık dört katına çıkarıyor. 16 pikselik bir karakteri bir akşamda animasyonlarsın, 64 pikselik olanı bir hafta sürer. Bunlar bir kere kilitlenip bir daha açılmamalı.',
+      'Sorular sıkıcı görünüyor ama takvimi asıl belirleyen yer burası. Sprite çözünürlüğünü iki katına çıkarmak iş yükünü yaklaşık dört katına çıkarıyor: on altı pikselik bir karakteri bir akşamda animasyonlarsın, altmış dört pikselik olanı bir hafta sürer. Bunları bir kere kilitleyip bir daha açmamak lazım.',
     qs: [
       C('px1', 'Oyunun iç çözünürlüğü ne olsun?', [
         '320×180',
@@ -436,16 +436,16 @@ export const SECTIONS: Section[] = [
       C('px3', 'Tile (zemin karosu) boyutu ne?', ['8×8', '16×16', '32×32', 'Bilmiyorum'],
         'Karakter boyutuyla uyumlu olmalı, yoksa her şey elle hizalanır.'),
       C('px4', 'Büyütme nasıl olsun?', [
-        'Tam sayı ölçek (2x, 3x) — kenarlarda siyah bant olabilir',
-        'Ekranı tam doldur — hafif bozulma olabilir',
+        'Tam sayı ölçek (2x, 3x), kenarlarda siyah bant olabilir',
+        'Ekranı tam doldur, hafif bozulma olabilir',
         'Bilmiyorum',
       ]),
       C('px5', 'Palet nasıl kurulsun?', [
-        'Tek global palet — her şey aynı renkleri kullanır',
+        'Tek global palet, her şey aynı renkleri kullanır',
         'Sprite başına ayrı palet',
         'Bilmiyorum',
       ], 'Global palet görsel bütünlüğü zorla sağlar, esnekliği azaltır.'),
-      C('px6', 'Kaç renk kullanalım?', ['8–16 renk', '16–32 renk', '32–64 renk', 'Sınır olmasın']),
+      C('px6', 'Kaç renk kullanalım?', ['8-16 renk', '16-32 renk', '32-64 renk', 'Sınır olmasın']),
       C('px7', 'Outline (kenar çizgisi) kuralı ne?', [
         '1 piksel siyah outline',
         'Renkli / koyulaştırılmış outline',
@@ -481,7 +481,7 @@ export const SECTIONS: Section[] = [
         'Chiptune',
         'Lo-fi',
         'Ambient / gerilim',
-        'Jazz — asansör müziği',
+        'Jazz, asansör müziği gibi',
         'Elektronik',
         'Ağırlıklı sessizlik',
       ]),
@@ -499,7 +499,7 @@ export const SECTIONS: Section[] = [
     id: 'teknik',
     no: '09',
     title: 'Teknik',
-    lead: 'Teslim formatları ve araçlar herkesi bağlıyor, o yüzden üçünüz de cevaplayın.',
+    lead: 'Teslim formatları ve araçlar herkesi bağlıyor, o yüzden hepiniz cevaplayın.',
     qs: [
       C('t1', 'Hangi engine ile yapalım?', [
         'Godot',
@@ -561,7 +561,7 @@ export const SECTIONS: Section[] = [
       T(
         't10',
         'En büyük teknik risk ne ve ne zaman kanıtlayacağız?',
-        'Kaydetme sistemi — 1. ay sonunda çalışan bir örnek',
+        'Kaydetme sistemi, 1. ay sonunda çalışan bir örnek',
         'Riski üretime bırakmak, postmortem\'lerde en pahalı hata.',
       ),
     ],
@@ -571,12 +571,12 @@ export const SECTIONS: Section[] = [
     no: '10',
     title: 'Takvim ve bütçe',
     lead:
-      'Uzman geliştiriciler bile tahminlerini %20-30 düşük yapıyor. Bu yüzden takvimde tampon olmayan proje geç kalmış sayılır.',
+      'Uzman geliştiriciler bile tahminlerini yüzde yirmi otuz düşük yapıyor. Takviminde tampon yoksa proje daha başlamadan geç kalmış sayılıyor.',
     qs: [
       C('k1', 'Bu projeye haftada kaç saat ayırabilirsin?', [
-        '0–5 saat',
-        '5–10 saat',
-        '10–20 saat',
+        '0-5 saat',
+        '5-10 saat',
+        '10-20 saat',
         '20+ saat',
       ], 'İyimser değil, gerçekçi cevap ver. Bu sayı takvimin tamamını belirliyor.'),
       C('k2', '6 ay sonunda elimizde ne olmalı?', [
@@ -586,8 +586,8 @@ export const SECTIONS: Section[] = [
         'Oynanabilir prototip',
       ]),
       C('k3', 'İlk oynanabilir prototip ne zaman çıkmalı?', [
-        '2–4 hafta içinde',
-        '1–2 ay',
+        '2-4 hafta içinde',
+        '1-2 ay',
         '3 ay',
         'Daha sonra',
       ]),
@@ -595,7 +595,7 @@ export const SECTIONS: Section[] = [
       C('k5', 'Takvimde ne kadar tampon bırakalım?', [
         'Tampon yok, 6 ay 6 aydır',
         '%10 (2-3 hafta)',
-        '%20–30 (1-1.5 ay)',
+        '%20-30 (1-1.5 ay)',
         '%50 (3 ay)',
       ]),
       C('k6', 'Kapsamı kesip kesmeyeceğimize ne zaman karar verelim?', [
@@ -608,14 +608,14 @@ export const SECTIONS: Section[] = [
       C('k8', 'Bu projeye para harcayabilir miyiz?', [
         'Hayır, sıfır bütçe',
         'Küçük (asset, müzik lisansı için birkaç bin TL)',
-        'Orta — gerekirse dışarıdan iş alırız',
+        'Orta, gerekirse dışarıdan iş alırız',
         'Konuşmadık',
       ]),
       T('k9', 'Önümüzdeki 6 ayda seni yavaşlatacak bir şey var mı?', 'sınav, iş, taşınma, tatil'),
       C('k10', 'İlerlemeyi nasıl takip edelim?', [
         'Haftalık hedefler',
         'Aylık milestone',
-        '3–4 büyük kilometre taşı',
+        '3-4 büyük kilometre taşı',
         'Takip olmasın',
       ]),
     ],
@@ -625,7 +625,7 @@ export const SECTIONS: Section[] = [
     no: '11',
     title: 'Roller ve karar',
     lead:
-      'Küçük ekiplerde çatışmaların çoğu kişilik meselesi değil, yapı meselesi: kimin neye karar verdiği yazılı olmadığı için. Dikkat: "işi kim yapıyor" ile "son söz kimde" aynı soru değil. Bilge çevre sanatını çizebilir ama sanat yönünün son sözü başkasında olabilir.',
+      'Küçük ekiplerde çatışmaların çoğu kişilik meselesi değil, yapı meselesi. Kimin neye karar verdiği yazılı olmadığı için çıkıyor. Şuna dikkat et: "işi kim yapıyor" ile "son söz kimde" aynı soru değil. Biri çevre sanatını çizebilir ama sanat yönünün son sözü başkasında olabilir.',
     qs: [
       OWN('r1', 'Kodu kim yazıyor?'),
       OWN('r2', 'Oynanış mekaniklerini kim tasarlıyor?'),
@@ -644,7 +644,7 @@ export const SECTIONS: Section[] = [
       OWN('r15', 'SON SÖZ: kapsam ve takvim'),
       C('r16', 'İki kişi anlaşamazsa süreç ne olsun?', [
         'O alanın son söz sahibi karar verir',
-        'Sütunlara bakarız — hangisini güçlendiriyorsa o',
+        'Sütunlara bakarız, hangisini güçlendiriyorsa o kazanır',
         'Prototip yapıp test ederiz',
         'Oy çokluğu',
         'Ertesi güne bırakırız',
@@ -691,7 +691,7 @@ export const SECTIONS: Section[] = [
     no: '12',
     title: 'Bitirme ve çıkış',
     lead:
-      '"Bitti" tanımı yoksa ekip ya sonsuza kadar cilalıyor ya da yarım yayınlıyor. Tanımı şimdi yazmak lazım.',
+      '"Bitti" tanımı yoksa ekip ya sonsuza kadar cilalıyor ya da yarım yayınlıyor. O tanımı şimdi yazalım.',
     qs: [
       T(
         'b1',

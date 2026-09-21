@@ -7,7 +7,10 @@ interface Env {
 
 interface Entry {
   id: string;
+  /** Kişinin yazdığı ad, olduğu gibi. */
   who: string;
+  /** Eşleştirme anahtarı: "Nihat" ile "nihat" aynı kişi sayılsın diye. */
+  whoKey: string;
   answers: Record<string, { v?: unknown; n?: string }>;
   submitted: boolean;
   createdAt: number;
@@ -19,13 +22,25 @@ interface Store {
 }
 
 const KEY = '_data/parcae/responses.json';
-const PEOPLE = ['hasan', 'nihat', 'bilge'] as const;
+const MAX_NAME = 60;
 const MAX_BODY = 256 * 1024;
 const MAX_ENTRIES = 200;
 const PUT_RETRIES = 4;
 
 function emptyStore(): Store {
   return { entries: [] };
+}
+
+/** Sayfadaki eşinin birebir aynısı olmalı, yoksa taslak geri yüklenmez.
+ *  toLowerCase() Türkçe İ/I'da ortama göre değişebildiği için elle eşliyoruz. */
+function nameKey(raw: string): string {
+  return raw
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/\u0130/g, 'i')
+    .replace(/I/g, '\u0131')
+    .toLowerCase()
+    .slice(0, MAX_NAME);
 }
 
 async function load(env: Env): Promise<{ store: Store; etag: string | null }> {
@@ -64,10 +79,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const who = String(payload.who ?? '');
-  if (!(PEOPLE as readonly string[]).includes(who)) {
-    return Response.json({ error: 'Unknown participant' }, { status: 400 });
+  const who = String(payload.who ?? '')
+    .replace(/[\u0000-\u001f\u007f]/g, '')
+    .trim()
+    .slice(0, MAX_NAME);
+  if (!who) {
+    return Response.json({ error: 'Name required' }, { status: 400 });
   }
+  const whoKey = nameKey(who);
   const id = String(payload.id ?? '').slice(0, 64);
   if (!/^[A-Za-z0-9_-]{8,64}$/.test(id)) {
     return Response.json({ error: 'Invalid session id' }, { status: 400 });
@@ -84,6 +103,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
     if (existing) {
       existing.who = who;
+      existing.whoKey = whoKey;
       existing.answers = answers as Entry['answers'];
       existing.submitted = !!payload.submitted;
       existing.updatedAt = now;
@@ -95,6 +115,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       store.entries.push({
         id,
         who,
+        whoKey,
         answers: answers as Entry['answers'],
         submitted: !!payload.submitted,
         createdAt: now,
@@ -118,13 +139,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // adını seçerek yazabiliyor, dolayısıyla bu yeni bir kapı açmıyor.
   const whoParam = url.searchParams.get('who');
   if (whoParam) {
-    if (!(PEOPLE as readonly string[]).includes(whoParam)) {
-      return Response.json({ error: 'Unknown participant' }, { status: 400 });
-    }
+    const key = nameKey(whoParam);
+    if (!key) return Response.json({ error: 'Name required' }, { status: 400 });
     const { store } = await load(env);
     let latest: Entry | null = null;
     for (const e of store.entries) {
-      if (e.who === whoParam && (!latest || e.updatedAt > latest.updatedAt)) latest = e;
+      const eKey = e.whoKey ?? nameKey(e.who ?? '');
+      if (eKey === key && (!latest || e.updatedAt > latest.updatedAt)) latest = e;
     }
     return Response.json(
       latest
@@ -148,8 +169,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   if (url.searchParams.get('latest')) {
     const byPerson: Record<string, Entry> = {};
     for (const e of store.entries) {
-      const cur = byPerson[e.who];
-      if (!cur || e.updatedAt > cur.updatedAt) byPerson[e.who] = e;
+      const k = e.whoKey ?? nameKey(e.who ?? '');
+      const cur = byPerson[k];
+      if (!cur || e.updatedAt > cur.updatedAt) byPerson[k] = e;
     }
     return Response.json(byPerson, { headers: { 'cache-control': 'no-store' } });
   }

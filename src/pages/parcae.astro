@@ -3,9 +3,9 @@ import Layout from '../layouts/Layout.astro';
 import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
 ---
 
-<Layout title="parcae — form" description="Parcae ekip formu.">
+<Layout title="parcae formu" description="Parcae ekip formu.">
   <div class="fixed top-0 inset-x-0 z-50 bg-black/90 backdrop-blur border-b border-white/10">
-    <div class="max-w-2xl mx-auto px-6 h-12 flex items-center gap-4 text-[13px]">
+    <div class="max-w-2xl mx-auto px-6 h-12 flex items-center gap-3 text-[15px]">
       <button
         id="home-btn"
         type="button"
@@ -13,45 +13,47 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
       >
         <span class="arrow arrow-left">&larr;</span> home
       </button>
-      <span id="who-label" class="text-white/45 hidden"></span>
-      <span class="ml-auto text-white/45 font-mono tabular-nums" id="counter">0 / {TOTAL}</span>
-      <span id="save-state" class="text-white/30 w-20 text-right"></span>
+      <span id="who-label" class="text-white/45 hidden truncate min-w-0"></span>
+      <span class="ml-auto text-white/45 tabular-nums shrink-0" id="counter">0 / {TOTAL}</span>
+      <span id="save-state" class="text-white/30 text-right shrink-0"></span>
     </div>
     <div class="h-px bg-white/10">
       <div id="progress" class="h-px bg-white" style="width:0"></div>
     </div>
   </div>
 
-  <main class="min-h-screen px-6 pt-24 pb-32 font-sans text-[15px] leading-relaxed text-white">
+  <main class="min-h-screen px-6 pt-24 pb-32 font-sans text-[17px] leading-relaxed text-white">
     <div class="max-w-2xl mx-auto">
       <!-- kim dolduruyor -->
       <section id="gate">
         <h1 class="text-3xl font-black tracking-tight mb-4">Parcae</h1>
-        <p class="text-white/70 mb-2">
-          Oyunun ne olacağına ve kimin ne yapacağına karar vermeden önce üçümüzün
-          aynı şeyi mi düşündüğünü görmek istiyoruz.
-        </p>
         <p class="text-white/70 mb-8">
           {SECTIONS.length} bölüm, {TOTAL} soru, yaklaşık 40 dakika. Yarım
-          bırakabilirsin — cevapların tarayıcında saklanıyor, kaldığın yerden
-          devam edersin. Bilmediğin soruyu boş geç, "bilmiyorum" da bir cevap.
-          Kimse kimsenin cevabını görmüyor, birbirinize bakmadan doldurun.
+          bırakabilirsiniz. Cevapların tarayıcında saklanıyor, kaldığın yerden
+          devam edebilirsiniz. Bilmediğin soruyu boş geç, "bilmiyorum" da bir
+          cevap.
         </p>
-        <p class="text-[11px] uppercase tracking-[0.2em] text-white/40 mb-3 font-mono">Kimsin</p>
-        <div class="grid gap-2">
-          {
-            PEOPLE.map((p) => (
-              <button
-                type="button"
-                data-who={p.key}
-                class="who-btn text-left border border-white/20 hover:border-white hover:bg-white/5 px-4 py-3 transition-colors"
-              >
-                <span class="block">{p.name}</span>
-                <span class="block text-[13px] text-white/45 mt-0.5">{p.role}</span>
-              </button>
-            ))
-          }
-        </div>
+        <label for="name-input" class="block text-[15px] text-white/50 mb-3">Kimsin</label>
+        <form id="name-form" class="flex gap-2 flex-wrap">
+          <input
+            type="text"
+            id="name-input"
+            autocomplete="name"
+            maxlength="60"
+            placeholder="adını yaz"
+            class="flex-1 min-w-[12rem] bg-transparent border border-white/20 focus:border-white outline-none px-4 py-3 placeholder:text-white/25"
+          />
+          <button
+            type="submit"
+            class="border border-white px-6 py-3 hover:bg-white hover:text-black transition-colors shrink-0"
+          >
+            Başla
+          </button>
+        </form>
+        <p id="name-error" class="text-[15px] text-white/60 mt-3 hidden"></p>
+        <p class="text-[15px] text-white/45 mt-6">
+          Daha önce doldurmaya başladıysan aynı adı yaz, kaldığın yerden devam edersin.
+        </p>
       </section>
 
       <!-- form -->
@@ -60,8 +62,8 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
           SECTIONS.map((s) => (
             <section class="mb-16" data-section={s.id}>
               <div class="border-t border-white/20 pt-4 mb-8">
-                <p class="text-[11px] uppercase tracking-[0.2em] text-white/45 font-mono">
-                  {s.no} — {s.title}
+                <p class="text-[19px] font-semibold text-white tabular-nums">
+                  {s.no}. {s.title}
                 </p>
                 <p class="text-white/60 mt-2">{s.lead}</p>
               </div>
@@ -69,12 +71,12 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
               {s.qs.map((q, i) => (
                 <div class="mb-10 q-block" data-qid={q.id} data-qtype={q.t}>
                   <div class="flex gap-3">
-                    <span class="text-white/30 tabular-nums shrink-0 font-mono text-[13px] pt-0.5">
+                    <span class="text-white/35 tabular-nums shrink-0 text-[15px] pt-1">
                       {s.no}.{String(i + 1).padStart(2, '0')}
                     </span>
                     <div class="min-w-0 flex-1">
                       <p class="text-white/95">{q.q}</p>
-                      {q.hint && <p class="text-[13px] text-white/45 mt-1">{q.hint}</p>}
+                      {q.hint && <p class="text-[15px] text-white/45 mt-1">{q.hint}</p>}
 
                       {(q.t === 'choice' || q.t === 'multi') && (
                         <div class="mt-3 grid gap-1.5">
@@ -85,11 +87,30 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
                                 name={`q_${q.id}`}
                                 id={`q_${q.id}_${oi}`}
                                 value={o}
-                                class="mt-1.5 accent-white shrink-0"
+                                class="mt-1.5 shrink-0"
                               />
                               <span class="text-white/80">{o}</span>
                             </label>
                           ))}
+                          <div class="opt flex items-start gap-2.5 border border-white/15 px-3 py-2 hover:border-white/40 transition-colors">
+                            <input
+                              type={q.t === 'multi' ? 'checkbox' : 'radio'}
+                              name={`q_${q.id}`}
+                              id={`q_${q.id}_other`}
+                              data-other="1"
+                              class="mt-1.5 shrink-0 cursor-pointer"
+                            />
+                            <label for={`q_${q.id}_other`} class="text-white/80 shrink-0 cursor-pointer">
+                              Diğer:
+                            </label>
+                            <input
+                              type="text"
+                              id={`o_${q.id}`}
+                              data-other-text="1"
+                              placeholder="kendi cevabını yaz"
+                              class="flex-1 min-w-0 bg-transparent border-b border-white/20 focus:border-white outline-none px-1 text-[16px] placeholder:text-white/25"
+                            />
+                          </div>
                         </div>
                       )}
 
@@ -105,11 +126,11 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
                                   value={String(n)}
                                   class="sr-only"
                                 />
-                                <span class="tabular-nums font-mono text-[13px] text-white/80">{n}</span>
+                                <span class="tabular-nums text-[17px] text-white/80">{n}</span>
                               </label>
                             ))}
                           </div>
-                          <div class="flex justify-between text-[13px] text-white/45 mt-1.5 gap-4">
+                          <div class="flex justify-between text-[15px] text-white/45 mt-1.5 gap-4">
                             <span>{q.lo}</span>
                             <span class="text-right">{q.hi}</span>
                           </div>
@@ -142,7 +163,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
                             type="text"
                             id={`n_${q.id}`}
                             placeholder="neden? (opsiyonel)"
-                            class="w-full bg-transparent border-b border-white/15 focus:border-white/60 outline-none py-1 text-[13px] placeholder:text-white/25"
+                            class="w-full bg-transparent border-b border-white/15 focus:border-white/60 outline-none py-1 text-[16px] placeholder:text-white/25"
                           />
                         </div>
                       )}
@@ -166,7 +187,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
             <button
               id="reset"
               type="button"
-              class="text-[13px] text-white/40 hover:text-white transition-colors underline underline-offset-4"
+              class="text-[15px] text-white/40 hover:text-white transition-colors underline underline-offset-4"
             >
               cevaplarımı sıfırla
             </button>
@@ -184,7 +205,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
         <button
           id="reopen"
           type="button"
-          class="mt-6 text-[13px] text-white/45 hover:text-white hover:underline underline-offset-4"
+          class="mt-6 text-[15px] text-white/45 hover:text-white hover:underline underline-offset-4"
         >
           cevaplarımı tekrar düzenle
         </button>
@@ -193,17 +214,21 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
   </main>
 
   <style>
-    .opt:has(input:checked) {
-      border-color: #fff;
-      background: rgba(255, 255, 255, 0.08);
+    .opt {
+      accent-color: #3b82f6;
     }
-    .opt:has(input:checked) span {
+    .opt:has(input:checked) {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.16);
+    }
+    .opt:has(input:checked) span,
+    .opt:has(input:checked) label {
       color: #fff;
     }
   </style>
 
   <script>
-    import { SECTIONS, TOTAL, PEOPLE } from '../data/parcae/questions';
+    import { SECTIONS, TOTAL } from '../data/parcae/questions';
     import type { AnswerMap } from '../lib/parcae/types';
 
     const LS = 'parcae-form-v1';
@@ -218,16 +243,32 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
     const whoLabel = document.getElementById('who-label') as HTMLElement;
     const leftNote = document.getElementById('left-note') as HTMLElement;
     const homeBtn = document.getElementById('home-btn') as HTMLButtonElement;
+    const nameForm = document.getElementById('name-form') as HTMLFormElement;
+    const nameInput = document.getElementById('name-input') as HTMLInputElement;
+    const nameError = document.getElementById('name-error') as HTMLElement;
 
     const ALL = SECTIONS.flatMap((s) => s.qs);
 
     /** Her kişinin cevabı ayrı tutuluyor: home'a basıp başka biri seçilince
      *  öncekinin cevapları silinmesin. Oturum id'si de kişiye bağlı kalıyor,
      *  böylece API'de aynı kaydın üstüne yazılıyor, yeni satır açılmıyor. */
-    type Rec = { id: string; answers: AnswerMap; submitted: boolean };
-    type State = { who: string | null; byPerson: Record<string, Rec> };
+    type Rec = { id: string; name: string; answers: AnswerMap; submitted: boolean };
+    type State = { key: string | null; byPerson: Record<string, Rec> };
 
-    let state: State = { who: null, byPerson: {} };
+    let state: State = { key: null, byPerson: {} };
+
+    /** functions/api/parcae.ts içindeki eşinin birebir aynısı olmalı, yoksa
+     *  sunucudaki taslak bulunamaz. toLowerCase() Türkçe İ/I'da ortama göre
+     *  değiştiği için o iki harfi elle eşliyoruz. */
+    function nameKey(raw: string): string {
+      return raw
+        .trim()
+        .replace(/\s+/g, ' ')
+        .replace(/\u0130/g, 'i')
+        .replace(/I/g, '\u0131')
+        .toLowerCase()
+        .slice(0, 60);
+    }
 
     function newId(): string {
       const a = new Uint8Array(12);
@@ -236,12 +277,12 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
     }
 
     function rec(): Rec {
-      const who = state.who;
-      if (!who) return { id: newId(), answers: {}, submitted: false };
-      let r = state.byPerson[who];
+      const k = state.key;
+      if (!k) return { id: newId(), name: '', answers: {}, submitted: false };
+      let r = state.byPerson[k];
       if (!r) {
-        r = { id: newId(), answers: {}, submitted: false };
-        state.byPerson[who] = r;
+        r = { id: newId(), name: k, answers: {}, submitted: false };
+        state.byPerson[k] = r;
       }
       return r;
     }
@@ -252,14 +293,26 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
         if (!raw) return;
         const o = JSON.parse(raw);
         if (!o || typeof o !== 'object') return;
-        state.who = o.who ?? null;
+        state.key = o.key ?? o.who ?? null;
         if (o.byPerson && typeof o.byPerson === 'object') {
           state.byPerson = o.byPerson;
         } else if (o.who && o.answers) {
           // eski tek-kişilik kayıt biçimi
           state.byPerson = {
-            [o.who]: { id: o.id || newId(), answers: o.answers, submitted: !!o.submitted },
+            [o.who]: {
+              id: o.id || newId(),
+              name: o.who,
+              answers: o.answers,
+              submitted: !!o.submitted,
+            },
           };
+        }
+        // eski kayıtlarda görünen ad tutulmuyordu; anahtarı ad olarak kullan
+        for (const r of Object.values(state.byPerson)) {
+          if (r && !r.name) r.name = '';
+        }
+        for (const [k, r] of Object.entries(state.byPerson)) {
+          if (r && !r.name) r.name = k;
         }
       } catch {
         /* private mode */
@@ -283,7 +336,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
     }
 
     async function sync(): Promise<boolean> {
-      if (!state.who) return false;
+      if (!state.key) return false;
       const r = rec();
       try {
         const res = await fetch(API, {
@@ -291,15 +344,15 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
             id: r.id,
-            who: state.who,
+            who: r.name || state.key,
             answers: r.answers,
             submitted: r.submitted,
           }),
         });
-        saveState.textContent = res.ok ? 'kaydedildi' : 'kayıt hatası';
+        saveState.textContent = res.ok ? 'kayıtlı' : 'hata';
         return res.ok;
       } catch {
-        saveState.textContent = 'bağlantı yok';
+        saveState.textContent = 'çevrimdışı';
         return false;
       }
     }
@@ -333,11 +386,11 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
     /** Tarayıcı verisi silinmiş veya başka cihaza geçilmişse taslağı sunucudan
      *  geri al. Yerelde daha çok cevap varsa dokunma -- taze girdiyi eskiyle ezmeyelim. */
     async function restoreFromServer() {
-      if (!state.who) return;
+      if (!state.key) return;
       const r = rec();
       const localCount = Object.keys(r.answers).length;
       try {
-        const res = await fetch(`${API}?who=${encodeURIComponent(state.who)}`);
+        const res = await fetch(`${API}?who=${encodeURIComponent(r.name || state.key)}`);
         if (!res.ok) return;
         const remote = await res.json();
         if (!remote || !remote.answers) return;
@@ -348,7 +401,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
         persist();
         if (!form.classList.contains('hidden')) paint();
         else refreshCount();
-        saveState.textContent = 'geri yüklendi';
+        saveState.textContent = 'yüklendi';
       } catch {
         /* çevrimdışı: yerel kayıt zaten duruyor */
       }
@@ -374,12 +427,35 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
         const noteInput = block.querySelector('.note input') as HTMLInputElement | null;
         if (noteInput) noteInput.value = '';
 
+        const otherCtrl = block.querySelector('[data-other]') as HTMLInputElement | null;
+        const otherField = block.querySelector('[data-other-text]') as HTMLInputElement | null;
+        if (otherField) otherField.value = '';
+
         if (a?.v != null) {
-          if (q.t === 'multi' && Array.isArray(a.v)) {
+          const known = new Set(q.opts ?? []);
+          if (q.t === 'multi') {
+            // eski sürümde bu sorular tekli seçimdi: düz metin de gelebiliyor
+            const picked = Array.isArray(a.v) ? a.v : [String(a.v)];
             block.querySelectorAll<HTMLInputElement>('input[type=checkbox]').forEach((el) => {
-              el.checked = (a.v as string[]).includes(el.value);
+              if (el.dataset.other) return;
+              el.checked = picked.includes(el.value);
             });
-          } else if (q.t === 'choice' || q.t === 'scale') {
+            const extra = picked.find((v) => !known.has(v));
+            if (extra && otherCtrl && otherField) {
+              otherCtrl.checked = true;
+              otherField.value = extra;
+            }
+          } else if (q.t === 'choice') {
+            const val = String(a.v);
+            if (known.has(val)) {
+              block.querySelectorAll<HTMLInputElement>('input[type=radio]').forEach((el) => {
+                el.checked = !el.dataset.other && el.value === val;
+              });
+            } else if (val && otherCtrl && otherField) {
+              otherCtrl.checked = true;
+              otherField.value = val;
+            }
+          } else if (q.t === 'scale') {
             block.querySelectorAll<HTMLInputElement>('input[type=radio]').forEach((el) => {
               el.checked = el.value === a.v;
             });
@@ -391,6 +467,31 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
         noteBox(block)?.classList.toggle('hidden', !answered(q.id));
       }
       refreshCount();
+    }
+
+    /** Şıklardan hiçbirine uymayan değer "diğer" demek; ayrı alan tutmuyoruz. */
+    function otherText(block: Element): string {
+      const el = block.querySelector('[data-other-text]') as HTMLInputElement | null;
+      return el ? el.value.trim() : '';
+    }
+
+    function collect(block: HTMLElement, t: string) {
+      if (t === 'multi') {
+        const picked: string[] = [];
+        block.querySelectorAll<HTMLInputElement>('input[type=checkbox]').forEach((x) => {
+          if (!x.checked) return;
+          if (x.dataset.other) {
+            const txt = otherText(block);
+            if (txt) picked.push(txt);
+          } else {
+            picked.push(x.value);
+          }
+        });
+        return picked;
+      }
+      const chosen = block.querySelector<HTMLInputElement>('input[type=radio]:checked');
+      if (!chosen) return '';
+      return chosen.dataset.other ? otherText(block) : chosen.value;
     }
 
     function setAnswer(id: string, v?: string | string[], n?: string) {
@@ -414,6 +515,8 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
       homeBtn.classList.add('hidden');
       homeBtn.classList.remove('flex');
       saveState.textContent = '';
+      nameInput.value = rec().name;
+      nameError.classList.add('hidden');
       window.scrollTo({ top: 0 });
     }
 
@@ -421,8 +524,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
       gate.classList.add('hidden');
       done.classList.add('hidden');
       form.classList.remove('hidden');
-      const p = PEOPLE.find((x) => x.key === state.who);
-      whoLabel.textContent = p ? p.name.toLowerCase() : '';
+      whoLabel.textContent = rec().name;
       whoLabel.classList.remove('hidden');
       homeBtn.classList.remove('hidden');
       homeBtn.classList.add('flex');
@@ -439,16 +541,25 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
     }
 
     // kimlik
-    document.querySelectorAll<HTMLButtonElement>('.who-btn').forEach((b) => {
-      b.addEventListener('click', () => {
-        state.who = b.dataset.who ?? null;
-        rec();
-        persist();
-        if (rec().submitted) showDone();
-        else showForm();
-        window.scrollTo({ top: 0 });
-        restoreFromServer();
-      });
+    nameForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const typed = nameInput.value.trim().replace(/\s+/g, ' ');
+      const key = nameKey(typed);
+      if (!key) {
+        nameError.textContent = 'Devam etmek için adını yaz.';
+        nameError.classList.remove('hidden');
+        nameInput.focus();
+        return;
+      }
+      nameError.classList.add('hidden');
+      state.key = key;
+      const r = rec();
+      r.name = typed;
+      persist();
+      if (r.submitted) showDone();
+      else showForm();
+      window.scrollTo({ top: 0 });
+      restoreFromServer();
     });
 
     homeBtn.addEventListener('click', showGate);
@@ -462,11 +573,12 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
       const t = block.dataset.qtype!;
       if (el.id.startsWith('n_')) return;
 
-      if (t === 'multi') {
-        const picked: string[] = [];
-        block.querySelectorAll<HTMLInputElement>('input:checked').forEach((x) => picked.push(x.value));
-        setAnswer(id, picked);
-      } else if (t === 'choice' || t === 'scale') {
+      if (t === 'multi' || t === 'choice') {
+        setAnswer(id, collect(block, t));
+        if (el.dataset.other && el.checked) {
+          (block.querySelector('[data-other-text]') as HTMLInputElement | null)?.focus();
+        }
+      } else if (t === 'scale') {
         setAnswer(id, el.value);
       }
     });
@@ -476,8 +588,14 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
       const block = el.closest('[data-qid]') as HTMLElement | null;
       if (!block) return;
       const id = block.dataset.qid!;
-      if (el.id.startsWith('n_')) setAnswer(id, undefined, el.value);
-      else if (el.tagName === 'TEXTAREA' || el.getAttribute('type') === 'text') {
+      const t = block.dataset.qtype!;
+      if (el.id.startsWith('n_')) {
+        setAnswer(id, undefined, el.value);
+      } else if (el.dataset.otherText) {
+        const ctrl = block.querySelector('[data-other]') as HTMLInputElement | null;
+        if (ctrl && !ctrl.checked) ctrl.checked = true;
+        setAnswer(id, collect(block, t));
+      } else if (el.tagName === 'TEXTAREA' || el.getAttribute('type') === 'text') {
         setAnswer(id, el.value);
       }
     });
@@ -518,13 +636,16 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
 
     // açılış
     load();
-    if (state.who && state.byPerson[state.who]?.submitted) showDone();
-    else if (state.who) showForm();
-    else refreshCount();
+    if (state.key && state.byPerson[state.key]?.submitted) showDone();
+    else if (state.key) showForm();
+    else {
+      nameInput.value = '';
+      refreshCount();
+    }
 
     updateScrollBar();
     window.addEventListener('scroll', updateScrollBar, { passive: true });
     window.addEventListener('resize', updateScrollBar);
-    if (state.who) restoreFromServer();
+    if (state.key) restoreFromServer();
   </script>
 </Layout>
