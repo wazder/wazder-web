@@ -177,7 +177,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
 
         <div class="border-t border-white/20 pt-6">
           <p id="left-note" class="text-white/50 mb-4"></p>
-          <div class="flex items-center gap-5 flex-wrap">
+          <div class="flex items-center gap-4 flex-wrap">
             <button
               type="submit"
               class="border border-white px-5 py-2.5 hover:bg-white hover:text-black transition-colors"
@@ -185,13 +185,25 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
               Gönder
             </button>
             <button
+              id="save-btn"
+              type="button"
+              class="border border-white/30 px-5 py-2.5 hover:border-white transition-colors"
+            >
+              Kaydet
+            </button>
+            <span id="save-msg" class="text-[15px] text-white/50"></span>
+            <button
               id="reset"
               type="button"
-              class="text-[15px] text-white/40 hover:text-white transition-colors underline underline-offset-4"
+              class="ml-auto text-[15px] text-white/40 hover:text-white transition-colors underline underline-offset-4"
             >
               cevaplarımı sıfırla
             </button>
           </div>
+          <p class="text-[15px] text-white/40 mt-4">
+            Cevapların yazdıkça kendiliğinden kaydediliyor. Kaydet düğmesi sadece
+            beklemeden kaydedip onay vermek için.
+          </p>
         </div>
       </form>
 
@@ -613,6 +625,22 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
         persist();
         alert('Kaydedilemedi. İnternet bağlantını kontrol edip tekrar dene.');
       }
+    });
+
+    const saveMsg = document.getElementById('save-msg') as HTMLElement;
+
+    document.getElementById('save-btn')?.addEventListener('click', async () => {
+      if (timer) clearTimeout(timer);
+      persist();
+      saveMsg.textContent = 'kaydediliyor...';
+      const ok = await sync();
+      const n = ALL.filter((q) => answered(q.id)).length;
+      saveMsg.textContent = ok
+        ? `${n} cevap kaydedildi`
+        : `${n} cevap cihaza kaydedildi, sunucuya ulaşılamadı`;
+      window.setTimeout(() => {
+        saveMsg.textContent = '';
+      }, 4000);
     });
 
     document.getElementById('reset')?.addEventListener('click', async () => {
