@@ -111,11 +111,38 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 };
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
+  const url = new URL(request.url);
+
+  // Taslak geri yükleme: kişi tarayıcısını temizlemiş veya başka cihaza geçmişse
+  // kendi son kaydını geri alabilsin. Yetki istemiyor -- formu dolduran zaten
+  // adını seçerek yazabiliyor, dolayısıyla bu yeni bir kapı açmıyor.
+  const whoParam = url.searchParams.get('who');
+  if (whoParam) {
+    if (!(PEOPLE as readonly string[]).includes(whoParam)) {
+      return Response.json({ error: 'Unknown participant' }, { status: 400 });
+    }
+    const { store } = await load(env);
+    let latest: Entry | null = null;
+    for (const e of store.entries) {
+      if (e.who === whoParam && (!latest || e.updatedAt > latest.updatedAt)) latest = e;
+    }
+    return Response.json(
+      latest
+        ? {
+            id: latest.id,
+            answers: latest.answers,
+            submitted: latest.submitted,
+            updatedAt: latest.updatedAt,
+          }
+        : null,
+      { headers: { 'cache-control': 'no-store' } },
+    );
+  }
+
   const session = await requireAuth(request, env.AUTH_SECRET);
   if (!session) return new Response('Unauthorized', { status: 401 });
 
   const { store } = await load(env);
-  const url = new URL(request.url);
 
   // ?latest=1 collapses each person to their most recent entry.
   if (url.searchParams.get('latest')) {

@@ -34,8 +34,9 @@ const X = (id: string, q: string, ph?: string, hint?: string): Question => ({
 const OWN = (id: string, q: string): Question => ({
   id,
   q,
-  t: 'choice',
-  opts: ['Hasan', 'Nihat', 'Bilge', 'Ortak'],
+  t: 'multi',
+  opts: ['Hasan', 'Nihat', 'Bilge'],
+  hint: 'Birden fazla seçebilirsin. Üçünü birden seçmek "ortak" demek.',
   note: false,
 });
 
@@ -75,7 +76,7 @@ export const SECTIONS: Section[] = [
     no: '01',
     title: 'Sütunlar',
     lead:
-      'Tasarım sütunu, oyunun taviz verilmeyecek 3 ilkesi demek. İşe yaramasının sebebi şu: sonradan çıkan her fikir için "bu sütunlardan birini güçlendiriyor mu?" diye soruyorsun, cevap hayırsa tartışmadan kesiyorsun. Sütunlar olmadan her tartışma zevk tartışmasına dönüyor.',
+      'Tasarım sütunu, oyunun "bundan asla vazgeçmeyiz" dediği 3 şey demek. Ne işe yaradığı şurada belli oluyor: üç ay sonra biri "şuraya bir dükkân sistemi koysak" dediğinde, tartışma zevk kavgasına dönmeden "bu hangi sütunu güçlendiriyor?" diye soruyorsun. Cevap yoksa fikir düşüyor ve kimse alınmıyor, çünkü fikri eleyen kişi değil kural. Kötü sütun hiçbir fikri eleyemez: "iyi grafikler", "eğlenceli olsun", "bol içerik". İyi sütun bir fikre hayır dedirtebilir. Örnek olarak Celeste\'in sütunları: (1) zor ama her zaman adil platform hareketi, (2) ölünce bir saniyede yeniden başlarsın, (3) hikâye tırmanışın kendisiyle aynı şeyi anlatır.',
     qs: [
       T(
         'p1',
@@ -89,9 +90,14 @@ export const SECTIONS: Section[] = [
         'Tedirgin ama güçlü; her küçük karar önemliymiş gibi',
         '"Eğlenceli" cevabı işe yaramaz. Duygu yaz.',
       ),
-      X('p3', 'Sütun 1', 'örn: tırmanış her katta daha çok bedel ödetir', 'Üç sütunu tek tek yaz.'),
-      X('p4', 'Sütun 2'),
-      X('p5', 'Sütun 3'),
+      X(
+        'p3',
+        'Birinci sütun: bu oyunun vazgeçilmez özelliği ne?',
+        'örn: her kat bir öncekinden daha çok şey kaybettirir',
+        'Kısa bir cümle yeter. Test şu: bu cümle bir fikre "hayır" dedirtebiliyor mu?',
+      ),
+      X('p4', 'İkinci sütun', 'örn: oyuncu hiçbir an kendini güvende hissetmez'),
+      X('p5', 'Üçüncü sütun', 'örn: ofisin kendisi bir karakter gibi davranır'),
       T(
         'p6',
         'Bu sütunların çalıştığını nasıl test ederiz?',
@@ -133,7 +139,6 @@ export const SECTIONS: Section[] = [
         'Papers Please\'in sıkışmışlık hissini, mekaniğini değil',
         'Genel hayranlık değil, tek somut şey.',
       ),
-      C('p13', 'Oyunun adı "Parcae" kalsın mı?', ['Evet, kalsın', 'Hayır, değişmeli', 'Fark etmez']),
     ],
   },
   {
@@ -249,7 +254,12 @@ export const SECTIONS: Section[] = [
         '40',
         'Tasarım + sanat + kod + test dahil. Bu sayıyı kat sayısıyla çarpınca takvim çıkıyor.',
       ),
-      C('kp9', 'Toplam oynanış süresi hedefi ne?', ['30–60 dakika', '1–2 saat', '2–4 saat', '4+ saat']),
+      X(
+        'kp9',
+        'Toplam oynanış süresi ne kadar olmalı?',
+        'örn: 90 dakika',
+        'Kendi cümlenle yaz; aralık da verebilirsin.',
+      ),
       C('kp10', 'Vaat ettiğimiz görsel kaliteyi bu ekiple gerçekten çıkarabilir miyiz?', [
         'Evet, rahatlıkla',
         'Evet ama kapsamı küçük tutarsak',
@@ -662,8 +672,7 @@ export const SECTIONS: Section[] = [
       T('r23', 'Senin yapmak İSTEMEDİĞİN iş ne?', 'şimdi söylemek sonra küsmekten iyi'),
       T('r24', 'Bu projede öğrenmek veya denemek istediğin alan ne?'),
       T('r25', 'Diğer iki kişiden en çok ne bekliyorsun?', 'her biri için ayrı yaz'),
-      C('r26', 'Hangimiz kendini fazla yorup tükenme riski taşıyor?', [
-        'Ben',
+      M('r26', 'Hangimiz kendini fazla yorup tükenme riski taşıyor?', [
         'Hasan',
         'Nihat',
         'Bilge',

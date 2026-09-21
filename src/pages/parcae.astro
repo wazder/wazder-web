@@ -5,33 +5,39 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
 
 <Layout title="parcae — form" description="Parcae ekip formu.">
   <div class="fixed top-0 inset-x-0 z-50 bg-black/90 backdrop-blur border-b border-white/10">
-    <div class="max-w-2xl mx-auto px-6 h-11 flex items-center gap-4 font-mono text-xs">
-      <span class="tracking-[0.2em] uppercase">parcae</span>
-      <span id="who-label" class="font-thin text-white/50 hidden"></span>
-      <span class="ml-auto font-thin text-white/50 tabular-nums" id="counter">0 / {TOTAL}</span>
-      <span id="save-state" class="font-thin text-white/30 w-20 text-right"></span>
+    <div class="max-w-2xl mx-auto px-6 h-12 flex items-center gap-4 text-[13px]">
+      <button
+        id="home-btn"
+        type="button"
+        class="hidden items-center gap-1.5 text-white/55 hover:text-white transition-colors"
+      >
+        <span class="arrow arrow-left">&larr;</span> home
+      </button>
+      <span id="who-label" class="text-white/45 hidden"></span>
+      <span class="ml-auto text-white/45 font-mono tabular-nums" id="counter">0 / {TOTAL}</span>
+      <span id="save-state" class="text-white/30 w-20 text-right"></span>
     </div>
     <div class="h-px bg-white/10">
-      <div id="progress" class="h-px bg-white transition-all duration-300" style="width:0"></div>
+      <div id="progress" class="h-px bg-white" style="width:0"></div>
     </div>
   </div>
 
-  <main class="min-h-screen px-6 pt-24 pb-32 font-mono text-sm text-white">
+  <main class="min-h-screen px-6 pt-24 pb-32 font-sans text-[15px] leading-relaxed text-white">
     <div class="max-w-2xl mx-auto">
       <!-- kim dolduruyor -->
       <section id="gate">
-        <h1 class="font-sans text-3xl font-black tracking-tight mb-4">Parcae</h1>
-        <p class="font-thin leading-relaxed text-white/70 mb-2">
+        <h1 class="text-3xl font-black tracking-tight mb-4">Parcae</h1>
+        <p class="text-white/70 mb-2">
           Oyunun ne olacağına ve kimin ne yapacağına karar vermeden önce üçümüzün
           aynı şeyi mi düşündüğünü görmek istiyoruz.
         </p>
-        <p class="font-thin leading-relaxed text-white/70 mb-8">
+        <p class="text-white/70 mb-8">
           {SECTIONS.length} bölüm, {TOTAL} soru, yaklaşık 40 dakika. Yarım
           bırakabilirsin — cevapların tarayıcında saklanıyor, kaldığın yerden
           devam edersin. Bilmediğin soruyu boş geç, "bilmiyorum" da bir cevap.
           Kimse kimsenin cevabını görmüyor, birbirinize bakmadan doldurun.
         </p>
-        <p class="text-xs uppercase tracking-[0.2em] text-white/40 mb-3">Kimsin</p>
+        <p class="text-[11px] uppercase tracking-[0.2em] text-white/40 mb-3 font-mono">Kimsin</p>
         <div class="grid gap-2">
           {
             PEOPLE.map((p) => (
@@ -41,7 +47,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
                 class="who-btn text-left border border-white/20 hover:border-white hover:bg-white/5 px-4 py-3 transition-colors"
               >
                 <span class="block">{p.name}</span>
-                <span class="block text-xs font-thin text-white/40 mt-0.5">{p.role}</span>
+                <span class="block text-[13px] text-white/45 mt-0.5">{p.role}</span>
               </button>
             ))
           }
@@ -54,21 +60,21 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
           SECTIONS.map((s) => (
             <section class="mb-16" data-section={s.id}>
               <div class="border-t border-white/20 pt-4 mb-8">
-                <p class="text-xs uppercase tracking-[0.2em] text-white/40">
+                <p class="text-[11px] uppercase tracking-[0.2em] text-white/45 font-mono">
                   {s.no} — {s.title}
                 </p>
-                <p class="font-thin text-white/60 mt-2 leading-relaxed">{s.lead}</p>
+                <p class="text-white/60 mt-2">{s.lead}</p>
               </div>
 
               {s.qs.map((q, i) => (
                 <div class="mb-10 q-block" data-qid={q.id} data-qtype={q.t}>
                   <div class="flex gap-3">
-                    <span class="text-white/30 tabular-nums shrink-0">
+                    <span class="text-white/30 tabular-nums shrink-0 font-mono text-[13px] pt-0.5">
                       {s.no}.{String(i + 1).padStart(2, '0')}
                     </span>
                     <div class="min-w-0 flex-1">
-                      <p class="leading-relaxed">{q.q}</p>
-                      {q.hint && <p class="text-xs font-thin text-white/40 mt-1">{q.hint}</p>}
+                      <p class="text-white/95">{q.q}</p>
+                      {q.hint && <p class="text-[13px] text-white/45 mt-1">{q.hint}</p>}
 
                       {(q.t === 'choice' || q.t === 'multi') && (
                         <div class="mt-3 grid gap-1.5">
@@ -79,9 +85,9 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
                                 name={`q_${q.id}`}
                                 id={`q_${q.id}_${oi}`}
                                 value={o}
-                                class="mt-1 accent-white shrink-0"
+                                class="mt-1.5 accent-white shrink-0"
                               />
-                              <span class="font-thin leading-relaxed">{o}</span>
+                              <span class="text-white/80">{o}</span>
                             </label>
                           ))}
                         </div>
@@ -99,11 +105,11 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
                                   value={String(n)}
                                   class="sr-only"
                                 />
-                                <span class="tabular-nums">{n}</span>
+                                <span class="tabular-nums font-mono text-[13px] text-white/80">{n}</span>
                               </label>
                             ))}
                           </div>
-                          <div class="flex justify-between text-xs font-thin text-white/40 mt-1.5 gap-4">
+                          <div class="flex justify-between text-[13px] text-white/45 mt-1.5 gap-4">
                             <span>{q.lo}</span>
                             <span class="text-right">{q.hi}</span>
                           </div>
@@ -116,7 +122,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
                           name={`q_${q.id}`}
                           rows="3"
                           placeholder={q.ph}
-                          class="mt-3 w-full bg-transparent border border-white/15 focus:border-white outline-none px-3 py-2 font-thin leading-relaxed resize-y placeholder:text-white/25"
+                          class="mt-3 w-full bg-transparent border border-white/15 focus:border-white outline-none px-3 py-2 resize-y placeholder:text-white/25"
                         />
                       )}
 
@@ -126,7 +132,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
                           id={`q_${q.id}`}
                           name={`q_${q.id}`}
                           placeholder={q.ph}
-                          class="mt-3 w-full bg-transparent border border-white/15 focus:border-white outline-none px-3 py-2 font-thin placeholder:text-white/25"
+                          class="mt-3 w-full bg-transparent border border-white/15 focus:border-white outline-none px-3 py-2 placeholder:text-white/25"
                         />
                       )}
 
@@ -136,7 +142,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
                             type="text"
                             id={`n_${q.id}`}
                             placeholder="neden? (opsiyonel)"
-                            class="w-full bg-transparent border-b border-white/15 focus:border-white/60 outline-none py-1 text-xs font-thin placeholder:text-white/25"
+                            class="w-full bg-transparent border-b border-white/15 focus:border-white/60 outline-none py-1 text-[13px] placeholder:text-white/25"
                           />
                         </div>
                       )}
@@ -149,27 +155,36 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
         }
 
         <div class="border-t border-white/20 pt-6">
-          <p id="left-note" class="font-thin text-white/50 mb-4"></p>
-          <button
-            type="submit"
-            class="border border-white px-5 py-2.5 hover:bg-white hover:text-black transition-colors"
-          >
-            Gönder
-          </button>
+          <p id="left-note" class="text-white/50 mb-4"></p>
+          <div class="flex items-center gap-5 flex-wrap">
+            <button
+              type="submit"
+              class="border border-white px-5 py-2.5 hover:bg-white hover:text-black transition-colors"
+            >
+              Gönder
+            </button>
+            <button
+              id="reset"
+              type="button"
+              class="text-[13px] text-white/40 hover:text-white transition-colors underline underline-offset-4"
+            >
+              cevaplarımı sıfırla
+            </button>
+          </div>
         </div>
       </form>
 
       <!-- teşekkürler -->
       <section id="done" class="hidden">
-        <h1 class="font-sans text-3xl font-black tracking-tight mb-4">Gitti.</h1>
-        <p class="font-thin leading-relaxed text-white/70">
+        <h1 class="text-3xl font-black tracking-tight mb-4">Gitti.</h1>
+        <p class="text-white/70">
           Cevapların kaydedildi. Üçümüz de doldurunca oturup ayrıştığımız yerleri
           konuşacağız.
         </p>
         <button
           id="reopen"
           type="button"
-          class="mt-6 text-xs font-thin text-white/40 hover:text-white hover:underline underline-offset-4"
+          class="mt-6 text-[13px] text-white/45 hover:text-white hover:underline underline-offset-4"
         >
           cevaplarımı tekrar düzenle
         </button>
@@ -183,7 +198,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
       background: rgba(255, 255, 255, 0.08);
     }
     .opt:has(input:checked) span {
-      font-weight: 400;
+      color: #fff;
     }
   </style>
 
@@ -202,11 +217,17 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
     const saveState = document.getElementById('save-state') as HTMLElement;
     const whoLabel = document.getElementById('who-label') as HTMLElement;
     const leftNote = document.getElementById('left-note') as HTMLElement;
+    const homeBtn = document.getElementById('home-btn') as HTMLButtonElement;
 
     const ALL = SECTIONS.flatMap((s) => s.qs);
 
-    type State = { who: string | null; id: string; answers: AnswerMap; submitted: boolean };
-    let state: State = { who: null, id: newId(), answers: {}, submitted: false };
+    /** Her kişinin cevabı ayrı tutuluyor: home'a basıp başka biri seçilince
+     *  öncekinin cevapları silinmesin. Oturum id'si de kişiye bağlı kalıyor,
+     *  böylece API'de aynı kaydın üstüne yazılıyor, yeni satır açılmıyor. */
+    type Rec = { id: string; answers: AnswerMap; submitted: boolean };
+    type State = { who: string | null; byPerson: Record<string, Rec> };
+
+    let state: State = { who: null, byPerson: {} };
 
     function newId(): string {
       const a = new Uint8Array(12);
@@ -214,17 +235,30 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
       return Array.from(a, (b) => b.toString(16).padStart(2, '0')).join('');
     }
 
+    function rec(): Rec {
+      const who = state.who;
+      if (!who) return { id: newId(), answers: {}, submitted: false };
+      let r = state.byPerson[who];
+      if (!r) {
+        r = { id: newId(), answers: {}, submitted: false };
+        state.byPerson[who] = r;
+      }
+      return r;
+    }
+
     function load() {
       try {
         const raw = localStorage.getItem(LS);
         if (!raw) return;
         const o = JSON.parse(raw);
-        if (o && typeof o === 'object') {
-          state = {
-            who: o.who ?? null,
-            id: o.id || newId(),
-            answers: o.answers || {},
-            submitted: !!o.submitted,
+        if (!o || typeof o !== 'object') return;
+        state.who = o.who ?? null;
+        if (o.byPerson && typeof o.byPerson === 'object') {
+          state.byPerson = o.byPerson;
+        } else if (o.who && o.answers) {
+          // eski tek-kişilik kayıt biçimi
+          state.byPerson = {
+            [o.who]: { id: o.id || newId(), answers: o.answers, submitted: !!o.submitted },
           };
         }
       } catch {
@@ -250,15 +284,16 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
 
     async function sync(): Promise<boolean> {
       if (!state.who) return false;
+      const r = rec();
       try {
         const res = await fetch(API, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            id: state.id,
+            id: r.id,
             who: state.who,
-            answers: state.answers,
-            submitted: state.submitted,
+            answers: r.answers,
+            submitted: r.submitted,
           }),
         });
         saveState.textContent = res.ok ? 'kaydedildi' : 'kayıt hatası';
@@ -270,7 +305,7 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
     }
 
     function answered(id: string): boolean {
-      const a = state.answers[id];
+      const a = rec().answers[id];
       if (!a || a.v == null) return false;
       return Array.isArray(a.v) ? a.v.length > 0 : String(a.v).trim() !== '';
     }
@@ -278,7 +313,6 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
     function refreshCount() {
       const n = ALL.filter((q) => answered(q.id)).length;
       counter.textContent = `${n} / ${TOTAL}`;
-      progress.style.width = `${TOTAL ? (n / TOTAL) * 100 : 0}%`;
       const left = TOTAL - n;
       leftNote.textContent = left
         ? `${left} soru boş. Boş bırakabilirsin ama emin olduğun yerleri doldur.`
@@ -289,11 +323,56 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
       return block.querySelector('.note');
     }
 
+    /** Header'ın altındaki çizgi sayfadaki konumu gösteriyor. */
+    function updateScrollBar() {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = max > 8 ? Math.min(100, (window.scrollY / max) * 100) : 0;
+      progress.style.width = `${pct}%`;
+    }
+
+    /** Tarayıcı verisi silinmiş veya başka cihaza geçilmişse taslağı sunucudan
+     *  geri al. Yerelde daha çok cevap varsa dokunma -- taze girdiyi eskiyle ezmeyelim. */
+    async function restoreFromServer() {
+      if (!state.who) return;
+      const r = rec();
+      const localCount = Object.keys(r.answers).length;
+      try {
+        const res = await fetch(`${API}?who=${encodeURIComponent(state.who)}`);
+        if (!res.ok) return;
+        const remote = await res.json();
+        if (!remote || !remote.answers) return;
+        if (Object.keys(remote.answers).length <= localCount) return;
+        r.id = remote.id;
+        r.answers = remote.answers;
+        r.submitted = !!remote.submitted;
+        persist();
+        if (!form.classList.contains('hidden')) paint();
+        else refreshCount();
+        saveState.textContent = 'geri yüklendi';
+      } catch {
+        /* çevrimdışı: yerel kayıt zaten duruyor */
+      }
+    }
+
     function paint() {
+      const answers = rec().answers;
       for (const q of ALL) {
-        const a = state.answers[q.id];
+        const a = answers[q.id];
         const block = form.querySelector(`[data-qid="${q.id}"]`);
         if (!block) continue;
+
+        // her boyamada sıfırla, yoksa kişi değişince öncekinin işaretleri kalıyor
+        block.querySelectorAll<HTMLInputElement>('input[type=checkbox], input[type=radio]').forEach(
+          (el) => {
+            el.checked = false;
+          },
+        );
+        const field = block.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+          'textarea, input[type=text]:not([id^="n_"])',
+        );
+        if (field) field.value = '';
+        const noteInput = block.querySelector('.note input') as HTMLInputElement | null;
+        if (noteInput) noteInput.value = '';
 
         if (a?.v != null) {
           if (q.t === 'multi' && Array.isArray(a.v)) {
@@ -304,33 +383,38 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
             block.querySelectorAll<HTMLInputElement>('input[type=radio]').forEach((el) => {
               el.checked = el.value === a.v;
             });
-          } else {
-            const f = block.querySelector<HTMLInputElement | HTMLTextAreaElement>(
-              'textarea, input[type=text]:not([id^="n_"])',
-            );
-            if (f) f.value = String(a.v);
+          } else if (field) {
+            field.value = String(a.v);
           }
         }
-        const nb = noteBox(block);
-        if (nb) {
-          const ni = nb.querySelector('input') as HTMLInputElement | null;
-          if (ni && a?.n) ni.value = a.n;
-          nb.classList.toggle('hidden', !answered(q.id));
-        }
+        if (noteInput && a?.n) noteInput.value = a.n;
+        noteBox(block)?.classList.toggle('hidden', !answered(q.id));
       }
       refreshCount();
     }
 
     function setAnswer(id: string, v?: string | string[], n?: string) {
-      const cur = state.answers[id] ?? {};
+      const answers = rec().answers;
+      const cur = answers[id] ?? {};
       if (v !== undefined) cur.v = v;
       if (n !== undefined) cur.n = n;
-      state.answers[id] = cur;
+      answers[id] = cur;
 
       const block = form.querySelector(`[data-qid="${id}"]`);
       if (block) noteBox(block)?.classList.toggle('hidden', !answered(id));
       refreshCount();
       scheduleSync();
+    }
+
+    function showGate() {
+      form.classList.add('hidden');
+      done.classList.add('hidden');
+      gate.classList.remove('hidden');
+      whoLabel.classList.add('hidden');
+      homeBtn.classList.add('hidden');
+      homeBtn.classList.remove('flex');
+      saveState.textContent = '';
+      window.scrollTo({ top: 0 });
     }
 
     function showForm() {
@@ -340,6 +424,8 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
       const p = PEOPLE.find((x) => x.key === state.who);
       whoLabel.textContent = p ? p.name.toLowerCase() : '';
       whoLabel.classList.remove('hidden');
+      homeBtn.classList.remove('hidden');
+      homeBtn.classList.add('flex');
       paint();
     }
 
@@ -348,19 +434,26 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
       form.classList.add('hidden');
       done.classList.remove('hidden');
       whoLabel.classList.add('hidden');
+      homeBtn.classList.remove('hidden');
+      homeBtn.classList.add('flex');
     }
 
-    // identity
+    // kimlik
     document.querySelectorAll<HTMLButtonElement>('.who-btn').forEach((b) => {
       b.addEventListener('click', () => {
         state.who = b.dataset.who ?? null;
+        rec();
         persist();
-        showForm();
+        if (rec().submitted) showDone();
+        else showForm();
         window.scrollTo({ top: 0 });
+        restoreFromServer();
       });
     });
 
-    // answers
+    homeBtn.addEventListener('click', showGate);
+
+    // cevaplar
     form.addEventListener('change', (e) => {
       const el = e.target as HTMLInputElement;
       const block = el.closest('[data-qid]') as HTMLElement | null;
@@ -391,25 +484,47 @@ import { SECTIONS, PEOPLE, TOTAL } from '../data/parcae/questions';
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      state.submitted = true;
+      rec().submitted = true;
       persist();
       if (timer) clearTimeout(timer);
       saveState.textContent = '...';
       const ok = await sync();
       if (ok) showDone();
-      else alert('Kaydedilemedi. İnternet bağlantını kontrol edip tekrar dene.');
+      else {
+        rec().submitted = false;
+        persist();
+        alert('Kaydedilemedi. İnternet bağlantını kontrol edip tekrar dene.');
+      }
+    });
+
+    document.getElementById('reset')?.addEventListener('click', async () => {
+      if (!confirm('Bu formdaki bütün cevapların silinecek. Emin misin?')) return;
+      const r = rec();
+      r.answers = {};
+      r.submitted = false;
+      persist();
+      paint();
+      if (timer) clearTimeout(timer);
+      saveState.textContent = '...';
+      await sync();
+      window.scrollTo({ top: 0 });
     });
 
     document.getElementById('reopen')?.addEventListener('click', () => {
-      state.submitted = false;
+      rec().submitted = false;
       persist();
       showForm();
     });
 
-    // boot
+    // açılış
     load();
-    if (state.who && state.submitted) showDone();
+    if (state.who && state.byPerson[state.who]?.submitted) showDone();
     else if (state.who) showForm();
     else refreshCount();
+
+    updateScrollBar();
+    window.addEventListener('scroll', updateScrollBar, { passive: true });
+    window.addEventListener('resize', updateScrollBar);
+    if (state.who) restoreFromServer();
   </script>
 </Layout>
