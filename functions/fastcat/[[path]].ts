@@ -15,6 +15,8 @@ const TYPES: Record<string, string> = {
   wasm: 'application/wasm',
   png: 'image/png',
   json: 'application/json; charset=utf-8',
+  // Add-to-home-screen ignores the manifest unless it is served as JSON.
+  webmanifest: 'application/manifest+json; charset=utf-8',
 };
 
 export const onRequest: PagesFunction<Env> = async ({ params, env, request }) => {
